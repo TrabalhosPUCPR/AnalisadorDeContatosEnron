@@ -18,12 +18,21 @@ public class Main {
         graph.addAdjacency(3, 4);
         graph.addAdjacency(4, 5);
         graph.addAdjacency(5, 6);
+        graph.addAdjacency(6, 3);
 
         graph.printAdjacencies();
 
         Graph.BfsIterator bfsIterator = new Graph.BfsIterator(0, graph);
+        Graph.DfsIterator dfsIterator = new Graph.DfsIterator(0, graph);
+
+        System.out.print("BFS: ");
         while(bfsIterator.next(false) != null){
-            System.out.println(bfsIterator.next());
+            System.out.print(bfsIterator.next() + " ");
+        }
+        System.out.println();
+        System.out.print("DFS: ");
+        while(dfsIterator.next(false) != null){
+            System.out.print(dfsIterator.next() + " ");
         }
     }
 }

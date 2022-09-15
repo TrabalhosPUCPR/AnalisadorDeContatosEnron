@@ -1,6 +1,6 @@
 package Graph;
 
-import java.util.ArrayList;
+import java.util.*;
 
 public class Graph {
     private final ArrayList<ArrayList<Node<?>>> adjacency;
@@ -62,13 +62,13 @@ public class Graph {
     private abstract static class searchIterator {
         Graph graph;
         int iterator;
-        ArrayList<Integer> nodeToVisitIndex;
+        LinkedList<Integer> nodeToVisitIndex;
         boolean[] visitedIndex;
 
         public searchIterator(int origin, Graph graph) {
             this.graph = graph;
             this.iterator = origin;
-            this.nodeToVisitIndex = new ArrayList<>();
+            this.nodeToVisitIndex = new LinkedList<>();
             this.nodeToVisitIndex.add(this.iterator);
             this.visitedIndex = new boolean[graph.nodes.size()];
         }
@@ -82,10 +82,11 @@ public class Graph {
         public Node<?> next(){
             return this.next(true);
         }
-        protected void addToNextVisitList(int next){
+        protected void addToNextVisitList(int next, boolean rev){
             ArrayList<Node<?>> adjacency = this.graph.getAdjacency(next);
+            if (rev) Collections.reverse(adjacency);
             for(Node<?> node : adjacency){
-                if(!this.visitedIndex[node.getGraphIndex()]){
+                if(!this.visitedIndex[node.getGraphIndex()] && !this.nodeToVisitIndex.contains(node.getGraphIndex())){
                     this.nodeToVisitIndex.add(node.getGraphIndex());
                 }
             }
@@ -100,13 +101,15 @@ public class Graph {
         @Override
         public Node<?> next(boolean removeElement) {
             if(this.finished()) return null;
-            int next = this.nodeToVisitIndex.get(this.nodeToVisitIndex.get(0));
+            int next = this.nodeToVisitIndex.getFirst();
             if(!removeElement) return this.graph.getNode(next);
-            this.nodeToVisitIndex.remove(this.nodeToVisitIndex.get(0));
-            addToNextVisitList(next);
+            this.nodeToVisitIndex.remove(this.nodeToVisitIndex.getFirst());
+            addToNextVisitList(next, false);
             return this.graph.getNode(next);
         }
     }
+
+
     public static class DfsIterator extends searchIterator{
 
         public DfsIterator(int origin, Graph graph) {
@@ -116,10 +119,10 @@ public class Graph {
         @Override
         public Node<?> next(boolean removeElement) {
             if(this.finished()) return null;
-            int next = this.nodeToVisitIndex.get(this.nodeToVisitIndex.size()-1);
+            int next = this.nodeToVisitIndex.getLast();
             if(!removeElement) return this.graph.getNode(next);
-            this.nodeToVisitIndex.remove(this.nodeToVisitIndex.size()-1);
-            addToNextVisitList(next);
+            this.nodeToVisitIndex.remove(this.nodeToVisitIndex.getLast());
+            addToNextVisitList(next, true);
             return this.graph.getNode(next);
         }
     }
