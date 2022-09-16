@@ -3,30 +3,17 @@ package Graph;
 import java.util.*;
 
 public class Graph {
-    private final ArrayList<ArrayList<Node<?>>> adjacency;
     private final ArrayList<Node<?>> nodes;
 
     public Graph(){
-        this.adjacency = new ArrayList<>();
-        this.nodes = new ArrayList<>();
-    }
-
-    public Graph(ArrayList<ArrayList<Node<?>>> adjacency) {
-        this.adjacency = adjacency;
         this.nodes = new ArrayList<>();
     }
 
     public int size(){ return this.nodes.size(); }
 
     public void add(Node<?> node){
-        this.adjacency.add(new ArrayList<>());
         node.setGraphIndex(this.nodes.size());
         this.nodes.add(node);
-    }
-
-    public void addAdjacency(int node1Index, int node2Index){
-        this.adjacency.get(node1Index).add(this.nodes.get(node2Index));
-        this.adjacency.get(node2Index).add(this.nodes.get(node1Index));
     }
 
     public Node<?> getNode(int index){
@@ -37,16 +24,6 @@ public class Graph {
         this.nodes.set(index, node);
     }
 
-    public ArrayList<Node<?>> removeAdjacency(int index){
-        ArrayList<Node<?>> removed = this.adjacency.get(index);
-        this.adjacency.remove(index);
-        return removed;
-    }
-
-    public ArrayList<Node<?>> getAdjacency(int index){
-        return this.adjacency.get(index);
-    }
-
     public ArrayList<Node<?>> getNodes() {
         return nodes;
     }
@@ -54,7 +31,7 @@ public class Graph {
     public void printAdjacencies(){
         for(int i = 0; i < this.nodes.size(); i++){
             System.out.print(this.nodes.get(i) + ": ");
-            for(Node<?> nAdjacent : this.getAdjacency(i)){
+            for(Node<?> nAdjacent : this.nodes.get(i).getAdjacencies()){
                 System.out.print(nAdjacent + " ");
             }
             System.out.println();
@@ -63,7 +40,7 @@ public class Graph {
     public boolean[][] getAdjacencyMatrix(){
         boolean[][] matrix = new boolean[this.nodes.size()][this.nodes.size()];
         for(int i = 0; i < this.nodes.size(); i++){
-            ArrayList<Node<?>> adjacency = getAdjacency(i);
+            ArrayList<Node<?>> adjacency = this.nodes.get(i).getAdjacencies();
             for(int k = 0, index = 0; k < adjacency.size(); k++){
                 while(index < adjacency.get(k).getGraphIndex()){
                     index++;
@@ -125,7 +102,7 @@ public class Graph {
             return this.next(true);
         }
         protected void addToNextVisitList(int next, boolean rev){
-            ArrayList<Node<?>> adjacency = this.graph.getAdjacency(next);
+            ArrayList<Node<?>> adjacency = this.graph.getNode(next).getAdjacencies();
             if (rev) Collections.reverse(adjacency);
             for(Node<?> node : adjacency){
                 if(!this.visitedIndex[node.getGraphIndex()]){

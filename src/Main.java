@@ -7,18 +7,18 @@ public class Main {
             graph.add(new Node<>(i));
         }
 
-        graph.addAdjacency(0, 1);
-        graph.addAdjacency(0, 3);
-        graph.addAdjacency(0, 4);
-        graph.addAdjacency(1, 2);
-        graph.addAdjacency(1, 4);
-        graph.addAdjacency(1, 5);
-        graph.addAdjacency(2, 6);
-        graph.addAdjacency(2, 5);
-        graph.addAdjacency(3, 4);
-        graph.addAdjacency(4, 5);
-        graph.addAdjacency(5, 6);
-        graph.addAdjacency(6, 3);
+        graph.getNode(0).newAdjacency(graph.getNode(1));
+        graph.getNode(0).newAdjacency(graph.getNode(3));
+        graph.getNode(0).newAdjacency(graph.getNode(4));
+        graph.getNode(1).newAdjacency(graph.getNode(2));
+        graph.getNode(1).newAdjacency(graph.getNode(4));
+        graph.getNode(1).newAdjacency(graph.getNode(5));
+        graph.getNode(2).newAdjacency(graph.getNode(6));
+        graph.getNode(2).newAdjacency(graph.getNode(5));
+        graph.getNode(3).newAdjacency(graph.getNode(4));
+        graph.getNode(4).newAdjacency(graph.getNode(5));
+        graph.getNode(5).newAdjacency(graph.getNode(6));
+        graph.getNode(6).newAdjacency(graph.getNode(3));
 
         graph.printAdjacencies();
         graph.printAdjacencyMatrix();
