@@ -21,6 +21,7 @@ public class Main {
         graph.addAdjacency(6, 3);
 
         graph.printAdjacencies();
+        graph.printAdjacencyMatrix();
 
         Graph.BfsIterator bfsIterator = new Graph.BfsIterator(0, graph);
         Graph.DfsIterator dfsIterator = new Graph.DfsIterator(0, graph);
@@ -34,5 +35,10 @@ public class Main {
         while(dfsIterator.next(false) != null){
             System.out.print(dfsIterator.next() + " ");
         }
+        System.out.println();
+
+        System.out.println(graph.search(0, 5));
+
+        System.out.println("ShortestPath: " + graph.getShortestPath(0, graph.size()));
     }
 }

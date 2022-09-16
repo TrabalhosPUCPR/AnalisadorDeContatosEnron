@@ -1,6 +1,7 @@
 package Graph;
 
 public class Node<T> {
+
     private T label;
     private int graphIndex;
 

@@ -16,6 +16,8 @@ public class Graph {
         this.nodes = new ArrayList<>();
     }
 
+    public int size(){ return this.nodes.size(); }
+
     public void add(Node<?> node){
         this.adjacency.add(new ArrayList<>());
         node.setGraphIndex(this.nodes.size());
@@ -58,6 +60,46 @@ public class Graph {
             System.out.println();
         }
     }
+    public boolean[][] getAdjacencyMatrix(){
+        boolean[][] matrix = new boolean[this.nodes.size()][this.nodes.size()];
+        for(int i = 0; i < this.nodes.size(); i++){
+            ArrayList<Node<?>> adjacency = getAdjacency(i);
+            for(int k = 0, index = 0; k < adjacency.size(); k++){
+                while(index < adjacency.get(k).getGraphIndex()){
+                    index++;
+                }
+                matrix[i][index] = true;
+            }
+        }
+        return matrix;
+    }
+
+    public void printAdjacencyMatrix(){
+        boolean[][] adjacencyMatrix = getAdjacencyMatrix();
+        for (boolean[] matrix : adjacencyMatrix) {
+            System.out.print("[ ");
+            for (boolean b : matrix) {
+                if (b) System.out.print("1 ");
+                else System.out.print("0 ");
+            }
+            System.out.println("]");
+        }
+    }
+
+    public ArrayList<Node<?>> getShortestPath(int origin, int destination){
+        // TODO: 9/16/22 djikstra algorithm
+        return new ArrayList<>();
+    }
+
+    public boolean search(int origin, int destination){
+        Graph.BfsIterator bfs = new BfsIterator(origin, this);
+        while(bfs.next(false) != null){
+            if(bfs.next().getGraphIndex() == destination){
+                return true;
+            }
+        }
+        return false;
+    }
 
     private abstract static class searchIterator {
         Graph graph;
@@ -86,7 +128,8 @@ public class Graph {
             ArrayList<Node<?>> adjacency = this.graph.getAdjacency(next);
             if (rev) Collections.reverse(adjacency);
             for(Node<?> node : adjacency){
-                if(!this.visitedIndex[node.getGraphIndex()] && !this.nodeToVisitIndex.contains(node.getGraphIndex())){
+                if(!this.visitedIndex[node.getGraphIndex()]){
+                    this.nodeToVisitIndex.removeFirstOccurrence(node.getGraphIndex());
                     this.nodeToVisitIndex.add(node.getGraphIndex());
                 }
             }
@@ -108,7 +151,6 @@ public class Graph {
             return this.graph.getNode(next);
         }
     }
-
 
     public static class DfsIterator extends searchIterator{
 
