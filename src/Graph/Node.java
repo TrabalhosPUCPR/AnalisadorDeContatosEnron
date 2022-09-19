@@ -6,11 +6,13 @@ public class Node<T> {
 
     private T label;
     private int graphIndex;
-    ArrayList<Node<?>> adjacencies;
+    private ArrayList<Node<?>> adjacencies;
+    private ArrayList<Integer> weights;
 
     public Node(T label) {
         this.label = label;
-        adjacencies = new ArrayList<>();
+        this.adjacencies = new ArrayList<>();
+        this.weights = new ArrayList<>();
     }
 
     protected void setGraphIndex(int graphIndex) {
@@ -25,6 +27,10 @@ public class Node<T> {
         return label;
     }
 
+    public Integer getWeight(int i) {
+        return weights.get(i);
+    }
+
     public int getGraphIndex() {
         return graphIndex;
     }
@@ -34,16 +40,21 @@ public class Node<T> {
         return this.label.toString();
     }
 
-    public void newAdjacency(Node<?> node){
+    public void newAdjacency(Node<?> node, int weight){
         this.adjacencies.add(node);
+        this.weights.add(weight);
     }
 
-    public void newNonDirectedAdjacency(Node<?> node){
-        this.newAdjacency(node);
-        node.newAdjacency(this);
+    public void newNonDirectedAdjacency(Node<?> node, int weight){
+        this.newAdjacency(node, weight);
+        node.newAdjacency(this, weight);
     }
 
     public ArrayList<Node<?>> getAdjacencies() {
         return adjacencies;
+    }
+
+    public void setWeight(int adjacencyIndex, int weights){
+        this.weights.set(adjacencyIndex, weights);
     }
 }

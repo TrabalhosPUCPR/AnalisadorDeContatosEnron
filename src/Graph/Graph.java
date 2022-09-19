@@ -20,6 +20,14 @@ public class Graph {
         return this.nodes.get(index);
     }
 
+    public void newAdjacency(int node1Index, int node2Index, int weight){
+        this.nodes.get(node1Index).newAdjacency(this.nodes.get(node2Index), weight);
+    }
+    public void newNonDirectedAdjacency(int node1Index, int node2Index, int weight){
+        this.nodes.get(node1Index).newAdjacency(this.nodes.get(node2Index), weight);
+        this.nodes.get(node2Index).newAdjacency(this.nodes.get(node1Index), weight);
+    }
+
     public void setNode(int index, Node<?> node){
         this.nodes.set(index, node);
     }
@@ -28,11 +36,13 @@ public class Graph {
         return nodes;
     }
 
+
+
     public void printAdjacencies(){
         for(int i = 0; i < this.nodes.size(); i++){
-            System.out.print(this.nodes.get(i) + ": ");
+            System.out.print(this.nodes.get(i) + ": | ");
             for(Node<?> nAdjacent : this.nodes.get(i).getAdjacencies()){
-                System.out.print(nAdjacent + " ");
+                System.out.print(nAdjacent + " | ");
             }
             System.out.println();
         }
@@ -144,5 +154,10 @@ public class Graph {
             addToNextVisitList(next, true);
             return this.graph.getNode(next);
         }
+    }
+
+    @Override
+    public String toString() {
+        return this.nodes.toString();
     }
 }

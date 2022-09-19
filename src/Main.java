@@ -1,24 +1,31 @@
+import Analyzer.Analyzer;
 import Graph.*;
 
 public class Main {
     public static void main(String[] args) {
+        Analyzer analyzer = new Analyzer("Data/Amostra Enron");
+
+        analyzer.getGraph().printAdjacencies();
+    }
+
+    public void debugGraph(){
         Graph graph = new Graph();
         for(int i = 1; i < 8; i++){
             graph.add(new Node<>(i));
         }
 
-        graph.getNode(0).newAdjacency(graph.getNode(1));
-        graph.getNode(0).newAdjacency(graph.getNode(3));
-        graph.getNode(0).newAdjacency(graph.getNode(4));
-        graph.getNode(1).newAdjacency(graph.getNode(2));
-        graph.getNode(1).newAdjacency(graph.getNode(4));
-        graph.getNode(1).newAdjacency(graph.getNode(5));
-        graph.getNode(2).newAdjacency(graph.getNode(6));
-        graph.getNode(2).newAdjacency(graph.getNode(5));
-        graph.getNode(3).newAdjacency(graph.getNode(4));
-        graph.getNode(4).newAdjacency(graph.getNode(5));
-        graph.getNode(5).newAdjacency(graph.getNode(6));
-        graph.getNode(6).newAdjacency(graph.getNode(3));
+        graph.newAdjacency(0, 1, 5);
+        graph.newAdjacency(0, 3, 5);
+        graph.newAdjacency(0, 4, 5);
+        graph.newAdjacency(1, 2, 5);
+        graph.newAdjacency(1, 4, 5);
+        graph.newAdjacency(1, 5, 5);
+        graph.newAdjacency(2, 6, 5);
+        graph.newAdjacency(2, 5, 5);
+        graph.newAdjacency(3, 4, 5);
+        graph.newAdjacency(4, 5, 5);
+        graph.newAdjacency(5, 6, 5);
+        graph.newAdjacency(6, 3, 5);
 
         graph.printAdjacencies();
         graph.printAdjacencyMatrix();
