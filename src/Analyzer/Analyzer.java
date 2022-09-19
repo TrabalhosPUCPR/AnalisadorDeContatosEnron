@@ -5,11 +5,8 @@ import Graph.Node;
 
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 /*      EXAMPLE EMAIL TO ANALYZE
-
-É uma boa pegar o nome de cada um usando o X-To
 
 Message-ID: <28715254.1075858200633.JavaMail.evans@thyme>
 Date: Mon, 31 Jul 2000 09:22:00 -0700 (PDT)

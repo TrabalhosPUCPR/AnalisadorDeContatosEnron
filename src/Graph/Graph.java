@@ -160,4 +160,45 @@ public class Graph {
     public String toString() {
         return this.nodes.toString();
     }
+    
+    public static void debugGraph(){
+        Graph graph = new Graph();
+        for(int i = 1; i < 8; i++){
+            graph.add(new Node<>(i));
+        }
+
+        graph.newAdjacency(0, 1, 5);
+        graph.newAdjacency(0, 3, 15);
+        graph.newAdjacency(0, 4, 1);
+        graph.newAdjacency(1, 2, 45);
+        graph.newAdjacency(1, 4, 55);
+        graph.newAdjacency(1, 5, 5);
+        graph.newAdjacency(2, 6, 21);
+        graph.newAdjacency(2, 5, 5);
+        graph.newAdjacency(3, 4, 4);
+        graph.newAdjacency(4, 5, 8);
+        graph.newAdjacency(5, 6, 9);
+        graph.newAdjacency(6, 3, 7);
+
+        graph.printAdjacencies();
+        graph.printAdjacencyMatrix();
+
+        Graph.BfsIterator bfsIterator = new Graph.BfsIterator(0, graph);
+        Graph.DfsIterator dfsIterator = new Graph.DfsIterator(0, graph);
+
+        System.out.print("BFS: ");
+        while(bfsIterator.next(false) != null){
+            System.out.print(bfsIterator.next() + " ");
+        }
+        System.out.println();
+        System.out.print("DFS: ");
+        while(dfsIterator.next(false) != null){
+            System.out.print(dfsIterator.next() + " ");
+        }
+        System.out.println();
+
+        System.out.println(graph.search(0, 5));
+
+        System.out.println("ShortestPath: " + graph.getShortestPath(0, graph.size()));
+    }
 }
