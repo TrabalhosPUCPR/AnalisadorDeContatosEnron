@@ -60,27 +60,37 @@ public class Analyzer {
     private void addAdjacency(Node<?> userNode, String line){
         String[] emails = line.split(", ");
         for(String email : emails){
-            ArrayList<Node<?>> adjacents = userNode.getAdjacencies();
             exists : {
-                for(int i = 0; i < adjacents.size(); i++){
-                    if(email.equals(adjacents.get(i).getLabel())){
-                        userNode.setWeight(i, userNode.getWeight(i) + 1);
-                        break exists;
-                    }
+                // TODO: 9/21/22 ver uma maneira melhor de fazer isso
+                Node<?> newNode = new Node<>(email);
+                int adjacentIndex = userNode.indexOfAdjacent(newNode);
+                if(adjacentIndex != -1){
+                    userNode.setWeight(adjacentIndex, userNode.getWeight(adjacentIndex) + 1);
+                    break exists;
                 }
-                userNode.newAdjacency(new Node<>(email), 1);
+
+                int index = this.graph.add(newNode, false);
+                this.graph.newAdjacency(userNode.getGraphIndex(), index, 1);
             }
         }
+    }
+
+    private String getUserEmail(String userSentEmailDirectoty) throws IOException {
+        BufferedReader reader = new BufferedReader(new FileReader(userSentEmailDirectoty + "/1"));
+        while(!reader.readLine().startsWith("From:")){
+            reader.readLine();
+        }
+        return reader.readLine().substring(7);
     }
 
     private void createGraph(){
         File folder = new File(this.dataPath);
         for(File userFolder : folder.listFiles()){
-            Node<String> userNode = new Node<>(userFolder.getName());
-            this.graph.add(userNode);
-            File userSentEmailsFolder = new File(userFolder.getAbsolutePath() + "/_sent_mail");
-            System.out.println(userNode.getLabel());
             try{
+                File userSentEmailsFolder = new File(userFolder.getPath() + "/_sent_mail");
+                Node<String> userNode = new Node<>(getUserEmail(userSentEmailsFolder.getPath()));
+                this.graph.add(userNode, false);
+                System.out.println(userNode.getLabel());
                 for(File userSentEmails : userSentEmailsFolder.listFiles()){
                     BufferedReader reader = new BufferedReader(new FileReader(userSentEmails));
                     for (int i = 0; i < 3; i ++){
@@ -101,7 +111,5 @@ public class Analyzer {
                 System.err.println(userFolder.getName() + " has no sent emails!");
             }
         }
-        System.out.println(graph);
-        graph.printAdjacencies();
     }
 }

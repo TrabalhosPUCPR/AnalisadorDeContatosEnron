@@ -6,8 +6,8 @@ public class Node<T> {
 
     private T label;
     private int graphIndex;
-    private ArrayList<Node<?>> adjacencies;
-    private ArrayList<Integer> weights;
+    private final ArrayList<Node<?>> adjacencies;
+    private final ArrayList<Integer> weights;
 
     public Node(T label) {
         this.label = label;
@@ -40,12 +40,21 @@ public class Node<T> {
         return this.label.toString();
     }
 
-    public void newAdjacency(Node<?> node, int weight){
+    protected void newAdjacency(Node<?> node, int weight){
         this.adjacencies.add(node);
         this.weights.add(weight);
     }
 
-    public void newNonDirectedAdjacency(Node<?> node, int weight){
+    public int indexOfAdjacent(Node<?> node){
+        for(int i = 0; i < this.adjacencies.size(); i++){
+            if(this.adjacencies.get(i).equals(node)){
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    protected void newNonDirectedAdjacency(Node<?> node, int weight){
         this.newAdjacency(node, weight);
         node.newAdjacency(this, weight);
     }
@@ -56,5 +65,9 @@ public class Node<T> {
 
     public void setWeight(int adjacencyIndex, int weights){
         this.weights.set(adjacencyIndex, weights);
+    }
+
+    public boolean equals(Node<?> n) {
+        return n.getLabel().equals(this.label);
     }
 }

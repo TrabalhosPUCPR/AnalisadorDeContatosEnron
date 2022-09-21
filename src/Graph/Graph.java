@@ -11,9 +11,20 @@ public class Graph {
 
     public int size(){ return this.nodes.size(); }
 
-    public void add(Node<?> node){
+    public int add(Node<?> node){
         node.setGraphIndex(this.nodes.size());
         this.nodes.add(node);
+        return node.getGraphIndex();
+    }
+    public int add(Node<?> node, boolean repeat){
+        if (!repeat) {
+            for (Node<?> n : this.nodes) {
+                if (n.equals(node)) {
+                    return n.getGraphIndex();
+                }
+            }
+        }
+        return add(node);
     }
 
     public Node<?> getNode(int index){
@@ -36,12 +47,10 @@ public class Graph {
         return nodes;
     }
 
-
-
     public void printAdjacencies(){
-        for(int i = 0; i < this.nodes.size(); i++){
-            System.out.print(this.nodes.get(i) + ": | ");
-            for(Node<?> nAdjacent : this.nodes.get(i).getAdjacencies()){
+        for (Node<?> node : this.nodes) {
+            System.out.print(node + ": | ");
+            for (Node<?> nAdjacent : node.getAdjacencies()) {
                 System.out.print(nAdjacent + " | ");
             }
             System.out.println();
@@ -88,6 +97,16 @@ public class Graph {
         return false;
     }
 
+    public int indexOf(Node<?> node){
+        // TODO: 9/21/22 ver uma maneira melhor de fazer isso
+        for(Node<?> n : this.nodes){
+            if(n.equals(node)){
+                return n.getGraphIndex();
+            }
+        }
+        return -1;
+    }
+
     private abstract static class searchIterator {
         Graph graph;
         int iterator;
@@ -102,8 +121,8 @@ public class Graph {
             this.visitedIndex = new boolean[graph.nodes.size()];
         }
 
-        protected boolean finished(){
-            return this.nodeToVisitIndex.isEmpty();
+        protected boolean ready(){
+            return !this.nodeToVisitIndex.isEmpty();
         }
 
         abstract Node<?> next(boolean removeElement);
@@ -130,7 +149,7 @@ public class Graph {
 
         @Override
         public Node<?> next(boolean removeElement) {
-            if(this.finished()) return null;
+            if(!this.ready()) return null;
             int next = this.nodeToVisitIndex.getFirst();
             if(!removeElement) return this.graph.getNode(next);
             this.nodeToVisitIndex.remove(this.nodeToVisitIndex.getFirst());
@@ -147,7 +166,7 @@ public class Graph {
 
         @Override
         public Node<?> next(boolean removeElement) {
-            if(this.finished()) return null;
+            if(!this.ready()) return null;
             int next = this.nodeToVisitIndex.getLast();
             if(!removeElement) return this.graph.getNode(next);
             this.nodeToVisitIndex.remove(this.nodeToVisitIndex.getLast());
