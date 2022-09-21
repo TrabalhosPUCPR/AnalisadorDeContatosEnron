@@ -3,82 +3,54 @@ package Graph;
 import java.util.*;
 
 public class Graph {
-    private final ArrayList<Node<?>> nodes;
+    private final LinkedHashMap<String, Node<?>> nodes;
 
     public Graph(){
-        this.nodes = new ArrayList<>();
+        this.nodes = new LinkedHashMap<>();
     }
 
     public int size(){ return this.nodes.size(); }
 
-    public int add(Node<?> node){
-        node.setGraphIndex(this.nodes.size());
-        this.nodes.add(node);
-        return node.getGraphIndex();
-    }
-    public int add(Node<?> node, boolean repeat){
-        if (!repeat) {
-            for (Node<?> n : this.nodes) {
-                if (n.equals(node)) {
-                    return n.getGraphIndex();
-                }
-            }
+    public boolean add(Node<?> node){
+        if(this.nodes.get(node.toString()) == null){
+            this.nodes.put(node.toString(), node);
+            return true;
         }
-        return add(node);
+        return false;
     }
 
-    public Node<?> getNode(int index){
-        return this.nodes.get(index);
+    public Node<?> getNode(Object key){
+        return this.nodes.get(key.toString());
     }
 
-    public void newAdjacency(int node1Index, int node2Index, int weight){
-        this.nodes.get(node1Index).newAdjacency(this.nodes.get(node2Index), weight);
+    public boolean newAdjacency(Object node1, Object node2, int weight){
+        if(this.nodes.get(node2.toString()) == null){
+            return false;
+        }
+        this.nodes.get(node1.toString()).newAdjacency(this.nodes.get(node2.toString()), weight);
+        return true;
     }
-    public void newNonDirectedAdjacency(int node1Index, int node2Index, int weight){
-        this.nodes.get(node1Index).newAdjacency(this.nodes.get(node2Index), weight);
-        this.nodes.get(node2Index).newAdjacency(this.nodes.get(node1Index), weight);
+    public boolean newNonDirectedAdjacency(Object node1, Object node2, int weight){
+        return newAdjacency(node1, node2, weight) && newAdjacency(node2, node1, weight);
     }
 
-    public void setNode(int index, Node<?> node){
-        this.nodes.set(index, node);
+    public void setNode(Node<?> node){
+        this.nodes.put(node.toString(), node);
     }
 
-    public ArrayList<Node<?>> getNodes() {
+    public Node<?>[] getNodes() {
+        Node<?>[] nodes = new Node<?>[0];
+        nodes = this.nodes.values().toArray(nodes);
         return nodes;
     }
 
     public void printAdjacencies(){
-        for (Node<?> node : this.nodes) {
+        for (Node<?> node : getNodes()) {
             System.out.print(node + ": | ");
             for (Node<?> nAdjacent : node.getAdjacencies()) {
                 System.out.print(nAdjacent + " | ");
             }
             System.out.println();
-        }
-    }
-    public boolean[][] getAdjacencyMatrix(){
-        boolean[][] matrix = new boolean[this.nodes.size()][this.nodes.size()];
-        for(int i = 0; i < this.nodes.size(); i++){
-            ArrayList<Node<?>> adjacency = this.nodes.get(i).getAdjacencies();
-            for(int k = 0, index = 0; k < adjacency.size(); k++){
-                while(index < adjacency.get(k).getGraphIndex()){
-                    index++;
-                }
-                matrix[i][index] = true;
-            }
-        }
-        return matrix;
-    }
-
-    public void printAdjacencyMatrix(){
-        boolean[][] adjacencyMatrix = getAdjacencyMatrix();
-        for (boolean[] matrix : adjacencyMatrix) {
-            System.out.print("[ ");
-            for (boolean b : matrix) {
-                if (b) System.out.print("1 ");
-                else System.out.print("0 ");
-            }
-            System.out.println("]");
         }
     }
 
@@ -87,97 +59,94 @@ public class Graph {
         return new ArrayList<>();
     }
 
-    public boolean search(int origin, int destination){
-        Graph.BfsIterator bfs = new BfsIterator(origin, this);
+    public boolean search(Object originKey, Object destinationKey){
+        Graph.BfsIterator bfs = new BfsIterator(originKey, this);
         while(bfs.next(false) != null){
-            if(bfs.next().getGraphIndex() == destination){
+            if(bfs.next().toString().equals(destinationKey)){
                 return true;
             }
         }
         return false;
     }
 
-    public int indexOf(Node<?> node){
-        // TODO: 9/21/22 ver uma maneira melhor de fazer isso
-        for(Node<?> n : this.nodes){
-            if(n.equals(node)){
-                return n.getGraphIndex();
-            }
-        }
-        return -1;
-    }
-
     private abstract static class searchIterator {
         Graph graph;
-        int iterator;
-        LinkedList<Integer> nodeToVisitIndex;
-        boolean[] visitedIndex;
+        LinkedList<String> nodeToVisitOrder;
+        private final HashSet<String> visitedNodes;
 
-        public searchIterator(int origin, Graph graph) {
+        public searchIterator(Object originKey, Graph graph) {
             this.graph = graph;
-            this.iterator = origin;
-            this.nodeToVisitIndex = new LinkedList<>();
-            this.nodeToVisitIndex.add(this.iterator);
-            this.visitedIndex = new boolean[graph.nodes.size()];
+            this.nodeToVisitOrder = new LinkedList<>();
+            this.nodeToVisitOrder.add(originKey.toString());
+            this.visitedNodes = new HashSet<>();
+            this.visitedNodes.add(originKey.toString());
         }
 
         protected boolean ready(){
-            return !this.nodeToVisitIndex.isEmpty();
+            return !this.nodeToVisitOrder.isEmpty();
         }
 
         abstract Node<?> next(boolean removeElement);
 
+        private static void reverse(Node<?>[] nodeList){
+            for(int i = 0; i < nodeList.length / 2; i++){
+                Node<?> temp = nodeList[nodeList.length - i - 1];
+                nodeList[nodeList.length - i - 1] = nodeList[i];
+                nodeList[i] = temp;
+            }
+        }
+
         public Node<?> next(){
             return this.next(true);
         }
-        protected void addToNextVisitList(int next, boolean rev){
-            ArrayList<Node<?>> adjacency = this.graph.getNode(next).getAdjacencies();
-            if (rev) Collections.reverse(adjacency);
+        protected void addToNextVisitList(Node<?> next, boolean rev){
+            Node<?>[] adjacency = next.getAdjacencies();
+            if (rev) reverse(adjacency);
             for(Node<?> node : adjacency){
-                if(!this.visitedIndex[node.getGraphIndex()]){
-                    this.nodeToVisitIndex.removeFirstOccurrence(node.getGraphIndex());
-                    this.nodeToVisitIndex.add(node.getGraphIndex());
+                if(!this.visitedNodes.contains(node.toString())){
+                    this.nodeToVisitOrder.removeFirstOccurrence(node.toString());
+                    this.nodeToVisitOrder.add(node.toString());
                 }
             }
-            this.visitedIndex[next] = true;
+            this.visitedNodes.add(next.toString());
         }
     }
     public static class BfsIterator extends searchIterator{
-        public BfsIterator(int origin, Graph graph) {
+        public BfsIterator(Object origin, Graph graph) {
             super(origin, graph);
         }
 
         @Override
         public Node<?> next(boolean removeElement) {
             if(!this.ready()) return null;
-            int next = this.nodeToVisitIndex.getFirst();
-            if(!removeElement) return this.graph.getNode(next);
-            this.nodeToVisitIndex.remove(this.nodeToVisitIndex.getFirst());
+            Node<?> next = this.graph.getNode(this.nodeToVisitOrder.getFirst());
+            if(!removeElement) return next;
+            this.nodeToVisitOrder.removeFirst();
             addToNextVisitList(next, false);
-            return this.graph.getNode(next);
+            return next;
         }
     }
 
     public static class DfsIterator extends searchIterator{
 
-        public DfsIterator(int origin, Graph graph) {
+        public DfsIterator(Object origin, Graph graph) {
             super(origin, graph);
         }
 
         @Override
         public Node<?> next(boolean removeElement) {
             if(!this.ready()) return null;
-            int next = this.nodeToVisitIndex.getLast();
-            if(!removeElement) return this.graph.getNode(next);
-            this.nodeToVisitIndex.remove(this.nodeToVisitIndex.getLast());
+            Node<?> next = this.graph.getNode(this.nodeToVisitOrder.getLast());
+            if(!removeElement) return next;
+            this.nodeToVisitOrder.removeLast();
             addToNextVisitList(next, true);
-            return this.graph.getNode(next);
+            return next;
         }
     }
 
     @Override
     public String toString() {
-        return this.nodes.toString();
+        return Arrays.toString(this.nodes.values().toArray());
     }
     
     public static void debugGraph(){
@@ -186,24 +155,23 @@ public class Graph {
             graph.add(new Node<>(i));
         }
 
-        graph.newAdjacency(0, 1, 5);
-        graph.newAdjacency(0, 3, 15);
-        graph.newAdjacency(0, 4, 1);
-        graph.newAdjacency(1, 2, 45);
-        graph.newAdjacency(1, 4, 55);
-        graph.newAdjacency(1, 5, 5);
-        graph.newAdjacency(2, 6, 21);
-        graph.newAdjacency(2, 5, 5);
-        graph.newAdjacency(3, 4, 4);
-        graph.newAdjacency(4, 5, 8);
-        graph.newAdjacency(5, 6, 9);
-        graph.newAdjacency(6, 3, 7);
+        graph.newNonDirectedAdjacency(1, 2, 5);
+        graph.newNonDirectedAdjacency(1, 4, 15);
+        graph.newNonDirectedAdjacency(1, 5, 1);
+        graph.newNonDirectedAdjacency(2, 3, 45);
+        graph.newNonDirectedAdjacency(2, 5, 55);
+        graph.newNonDirectedAdjacency(2, 6, 5);
+        graph.newNonDirectedAdjacency(3, 7, 21);
+        graph.newNonDirectedAdjacency(3, 6, 5);
+        graph.newNonDirectedAdjacency(4, 5, 4);
+        graph.newNonDirectedAdjacency(5, 6, 8);
+        graph.newNonDirectedAdjacency(6, 7, 9);
+        graph.newNonDirectedAdjacency(7, 4, 7);
 
         graph.printAdjacencies();
-        graph.printAdjacencyMatrix();
 
-        Graph.BfsIterator bfsIterator = new Graph.BfsIterator(0, graph);
-        Graph.DfsIterator dfsIterator = new Graph.DfsIterator(0, graph);
+        Graph.BfsIterator bfsIterator = new Graph.BfsIterator(1, graph);
+        Graph.DfsIterator dfsIterator = new Graph.DfsIterator(1, graph);
 
         System.out.print("BFS: ");
         while(bfsIterator.next(false) != null){

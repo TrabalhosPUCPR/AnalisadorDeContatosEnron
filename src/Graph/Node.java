@@ -1,22 +1,41 @@
 package Graph;
 
-import java.util.ArrayList;
+import java.util.LinkedHashMap;
 
 public class Node<T> {
 
+    private static class AdjancencyHolder {
+        Node<?> node;
+        Integer weight;
+
+        public AdjancencyHolder(Node<?> node, Integer weight) {
+            this.node = node;
+            this.weight = weight;
+        }
+
+        public Node<?> getNode() {
+            return node;
+        }
+
+        public Integer getWeight() {
+            return weight;
+        }
+
+        public void setNode(Node<?> node) {
+            this.node = node;
+        }
+
+        public void setWeight(Integer weight) {
+            this.weight = weight;
+        }
+    }
+
     private T label;
-    private int graphIndex;
-    private final ArrayList<Node<?>> adjacencies;
-    private final ArrayList<Integer> weights;
+    private final LinkedHashMap<Object, Node.AdjancencyHolder> adjacencies;
 
     public Node(T label) {
         this.label = label;
-        this.adjacencies = new ArrayList<>();
-        this.weights = new ArrayList<>();
-    }
-
-    protected void setGraphIndex(int graphIndex) {
-        this.graphIndex = graphIndex;
+        this.adjacencies = new LinkedHashMap<>();
     }
 
     public void setLabel(T label){
@@ -27,12 +46,8 @@ public class Node<T> {
         return label;
     }
 
-    public Integer getWeight(int i) {
-        return weights.get(i);
-    }
-
-    public int getGraphIndex() {
-        return graphIndex;
+    public Integer getWeight(Object adjacentNode) {
+        return adjacencies.get(adjacentNode.toString()).getWeight();
     }
 
     @Override
@@ -41,31 +56,31 @@ public class Node<T> {
     }
 
     protected void newAdjacency(Node<?> node, int weight){
-        this.adjacencies.add(node);
-        this.weights.add(weight);
+        this.adjacencies.put(node.toString(), new AdjancencyHolder(node, weight));
     }
-
-    public int indexOfAdjacent(Node<?> node){
-        for(int i = 0; i < this.adjacencies.size(); i++){
-            if(this.adjacencies.get(i).equals(node)){
-                return i;
-            }
+    public Node<?> getAdjacency(String key){
+        AdjancencyHolder adjacent = this.adjacencies.get(key);
+        if(adjacent != null){
+            return adjacent.getNode();
         }
-        return -1;
+        return null;
     }
 
-    protected void newNonDirectedAdjacency(Node<?> node, int weight){
-        this.newAdjacency(node, weight);
-        node.newAdjacency(this, weight);
+    public Node<?>[] getAdjacencies() {
+        AdjancencyHolder[] adjancencyHolders = new AdjancencyHolder[0];
+        adjancencyHolders = this.adjacencies.values().toArray(adjancencyHolders);
+        Node<?>[] nodesList = new Node<?>[adjancencyHolders.length];
+        for(int i = 0; i < adjancencyHolders.length; i++){
+            nodesList[i] = adjancencyHolders[i].getNode();
+        }
+        return nodesList;
     }
 
-    public ArrayList<Node<?>> getAdjacencies() {
-        return adjacencies;
+    public void setWeight(Object adjacentNode, int weights){
+        this.adjacencies.get(adjacentNode.toString()).setWeight(weights);
     }
 
-    public void setWeight(int adjacencyIndex, int weights){
-        this.weights.set(adjacencyIndex, weights);
-    }
+
 
     public boolean equals(Node<?> n) {
         return n.getLabel().equals(this.label);
