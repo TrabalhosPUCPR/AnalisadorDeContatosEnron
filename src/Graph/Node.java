@@ -4,11 +4,11 @@ import java.util.LinkedHashMap;
 
 public class Node<T> {
 
-    private static class AdjancencyHolder {
+    private static class AdjacencyHolder {
         Node<?> node;
         Integer weight;
 
-        public AdjancencyHolder(Node<?> node, Integer weight) {
+        public AdjacencyHolder(Node<?> node, Integer weight) {
             this.node = node;
             this.weight = weight;
         }
@@ -31,7 +31,7 @@ public class Node<T> {
     }
 
     private T label;
-    private final LinkedHashMap<Object, Node.AdjancencyHolder> adjacencies;
+    private final LinkedHashMap<Object, Graph.Node.AdjacencyHolder> adjacencies;
 
     public Node(T label) {
         this.label = label;
@@ -56,10 +56,10 @@ public class Node<T> {
     }
 
     protected void newAdjacency(Node<?> node, int weight){
-        this.adjacencies.put(node.toString(), new AdjancencyHolder(node, weight));
+        this.adjacencies.put(node.toString(), new Graph.Node.AdjacencyHolder(node, weight));
     }
     public Node<?> getAdjacency(String key){
-        AdjancencyHolder adjacent = this.adjacencies.get(key);
+        Graph.Node.AdjacencyHolder adjacent = this.adjacencies.get(key);
         if(adjacent != null){
             return adjacent.getNode();
         }
@@ -67,20 +67,31 @@ public class Node<T> {
     }
 
     public Node<?>[] getAdjacencies() {
-        AdjancencyHolder[] adjancencyHolders = new AdjancencyHolder[0];
-        adjancencyHolders = this.adjacencies.values().toArray(adjancencyHolders);
-        Node<?>[] nodesList = new Node<?>[adjancencyHolders.length];
-        for(int i = 0; i < adjancencyHolders.length; i++){
-            nodesList[i] = adjancencyHolders[i].getNode();
+        Graph.Node.AdjacencyHolder[] adjacencyHolders = new Graph.Node.AdjacencyHolder[0];
+        adjacencyHolders = this.adjacencies.values().toArray(adjacencyHolders);
+        Node<?>[] nodesList = new Node<?>[adjacencyHolders.length];
+        for(int i = 0; i < adjacencyHolders.length; i++){
+            nodesList[i] = adjacencyHolders[i].getNode();
         }
         return nodesList;
+    }
+
+    public AdjacencyHolder[] getAdjacencyHolders(){
+        Graph.Node.AdjacencyHolder[] adjacencyHolders = new Graph.Node.AdjacencyHolder[0];
+        return this.adjacencies.values().toArray(adjacencyHolders);
     }
 
     public void setWeight(Object adjacentNode, int weights){
         this.adjacencies.get(adjacentNode.toString()).setWeight(weights);
     }
 
-
+    public int sumWeights(){
+        int sum = 0;
+        for(AdjacencyHolder adH : this.getAdjacencyHolders()){
+            sum += adH.weight;
+        }
+        return sum;
+    }
 
     public boolean equals(Node<?> n) {
         return n.getLabel().equals(this.label);

@@ -114,4 +114,13 @@ public class Analyzer {
             }
         }
     }
+
+    public Node<?>[] getTop20Senders(){
+        Node<?>[] senders = this.graph.getNodes();
+        int[] messages = new int[senders.length];
+        for(int i = 0; i < senders.length; i++){
+
+            messages[i] = senders[i].sumWeights();
+        }
+    }
 }

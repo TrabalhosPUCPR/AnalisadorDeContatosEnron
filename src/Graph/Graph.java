@@ -9,7 +9,14 @@ public class Graph {
         this.nodes = new LinkedHashMap<>();
     }
 
-    public int size(){ return this.nodes.size(); }
+    public int verticesSize(){return this.nodes.size();}
+    public int connections(){
+        int con = 0;
+        for(Node<?> n : this.getNodes()){
+            con += n.getAdjacencies().length;
+        }
+        return con;
+    }
 
     public boolean add(Node<?> node){
         if(this.nodes.get(node.toString()) == null){
@@ -186,6 +193,6 @@ public class Graph {
 
         System.out.println(graph.search(0, 5));
 
-        System.out.println("ShortestPath: " + graph.getShortestPath(0, graph.size()));
+        System.out.println("ShortestPath: " + graph.getShortestPath(0, graph.verticesSize()));
     }
 }
