@@ -4,6 +4,7 @@ import Graph.Graph;
 import Graph.Node;
 
 import java.io.*;
+import java.util.Arrays;
 import java.util.Objects;
 
 /*      EXAMPLE EMAIL TO ANALYZE
@@ -79,10 +80,8 @@ public class Analyzer {
 
     private String getUserEmail(String userSentEmailDirectoty) throws IOException {
         BufferedReader reader = new BufferedReader(new FileReader(userSentEmailDirectoty + "/1"));
-        while(!reader.readLine().startsWith("From:")){
-            reader.readLine();
-        }
-        return reader.readLine().substring(7);
+        while(!reader.readLine().startsWith("Date:")){}
+        return reader.readLine().substring(6);
     }
 
     private void createGraph(){
@@ -110,17 +109,63 @@ public class Analyzer {
                     }
                 }
             }catch (Exception e){
-                System.err.println(userFolder.getName() + " has no sent emails!" + e);
+                System.err.println(userFolder.getName() + " has no sent emails!");
             }
         }
     }
 
-    public Node<?>[] getTop20Senders(){
+    private Node<?>[] getTopSenders(){
         Node<?>[] senders = this.graph.getNodes();
         int[] messages = new int[senders.length];
         for(int i = 0; i < senders.length; i++){
-
             messages[i] = senders[i].sumWeights();
+        }
+        heapsort(senders, messages);
+        return senders;
+    }
+
+    private static Node<?>[] reverse(Node<?>[] nodeList){
+        for(int i = 0; i < nodeList.length / 2; i++){
+            Node<?> temp = nodeList[nodeList.length - i - 1];
+            nodeList[nodeList.length - i - 1] = nodeList[i];
+            nodeList[i] = temp;
+        }
+        return nodeList;
+    }
+
+    public Node<?>[] getTopSenders(int number){
+        Node<?>[] result = getTopSenders();
+        return Arrays.copyOf(reverse(result), number);
+    }
+
+    private static void heapsort(Node<?>[] nodes, int[] weights) {
+        int n = weights.length;
+        for (int i = n / 2 - 1; i >= 0; i--) heapify(nodes, weights, n, i);
+        for (int i = n - 1; i > 0; i--) {
+            int temp = weights[0];
+            Node<?> tempNode = nodes[0];
+            weights[0] = weights[i];
+            nodes[0] = nodes[i];
+            weights[i] = temp;
+            nodes[i] = tempNode;
+            heapify(nodes, weights, i, 0);
+        }
+    }
+
+    private static void heapify(Node<?>[] nodes, int[] weights, int n, int i) {
+        int largest = i;
+        int l = 2 * i + 1;
+        int r = 2 * i + 2;
+        if (l < n && weights[l] > weights[largest]) largest = l;
+        if (r < n && weights[r] > weights[largest]) largest = r;
+        if (largest != i) {
+            int swap = weights[i];
+            Node<?> swapNode = nodes[i];
+            weights[i] = weights[largest];
+            nodes[i] = nodes[largest];
+            weights[largest] = swap;
+            nodes[largest] = swapNode;
+            heapify(nodes, weights, n, largest);
         }
     }
 }
