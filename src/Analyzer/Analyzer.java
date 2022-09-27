@@ -129,8 +129,21 @@ public class Analyzer {
 
         String[] keys = hashMap.keySet().toArray(new String[0]);
         Integer[] numbers = hashMap.values().toArray(new Integer[0]);
-        
-        return new Node<?>[0];
+
+        heapsort(keys, Arrays.stream(numbers).mapToInt(Integer::intValue).toArray());
+
+        Node<?>[] nodes = new Node<?>[keys.length];
+
+        for(int i = 0; i < keys.length; i ++){
+            nodes[i] = this.graph.getNode(keys[i]);
+        }
+
+        return nodes;
+    }
+
+    public Node<?>[] getTopReceivers(int number){
+        Node<?>[] result = getTopReceivers();
+        return Arrays.copyOf(result, number);
     }
 
     private Node<?>[] getTopSenders(){
@@ -143,26 +156,17 @@ public class Analyzer {
         return senders;
     }
 
-    private static Node<?>[] reverse(Node<?>[] nodeList){
-        for(int i = 0; i < nodeList.length / 2; i++){
-            Node<?> temp = nodeList[nodeList.length - i - 1];
-            nodeList[nodeList.length - i - 1] = nodeList[i];
-            nodeList[i] = temp;
-        }
-        return nodeList;
-    }
-
     public Node<?>[] getTopSenders(int number){
         Node<?>[] result = getTopSenders();
-        return Arrays.copyOf(reverse(result), number);
+        return Arrays.copyOf(result, number);
     }
 
-    private static void heapsort(Node<?>[] nodes, int[] weights) {
+    private static void heapsort(Object[] nodes, int[] weights) {
         int n = weights.length;
         for (int i = n / 2 - 1; i >= 0; i--) heapify(nodes, weights, n, i);
         for (int i = n - 1; i > 0; i--) {
             int temp = weights[0];
-            Node<?> tempNode = nodes[0];
+            Object tempNode = nodes[0];
             weights[0] = weights[i];
             nodes[0] = nodes[i];
             weights[i] = temp;
@@ -171,20 +175,20 @@ public class Analyzer {
         }
     }
 
-    private static void heapify(Node<?>[] nodes, int[] weights, int n, int i) {
-        int largest = i;
+    private static void heapify(Object[] nodes, int[] weights, int n, int i) {
+        int smallest = i;
         int l = 2 * i + 1;
         int r = 2 * i + 2;
-        if (l < n && weights[l] > weights[largest]) largest = l;
-        if (r < n && weights[r] > weights[largest]) largest = r;
-        if (largest != i) {
+        if (l < n && weights[l] < weights[smallest]) smallest = l;
+        if (r < n && weights[r] < weights[smallest]) smallest = r;
+        if (smallest != i) {
             int swap = weights[i];
-            Node<?> swapNode = nodes[i];
-            weights[i] = weights[largest];
-            nodes[i] = nodes[largest];
-            weights[largest] = swap;
-            nodes[largest] = swapNode;
-            heapify(nodes, weights, n, largest);
+            Object swapNode = nodes[i];
+            weights[i] = weights[smallest];
+            nodes[i] = nodes[smallest];
+            weights[smallest] = swap;
+            nodes[smallest] = swapNode;
+            heapify(nodes, weights, n, smallest);
         }
     }
 }
