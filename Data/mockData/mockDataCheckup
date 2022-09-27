@@ -1,0 +1,26 @@
+Pessoa1 - Pessoa2(3x), Pessoa3(1x)
+Pessoa2 - Pessoa1(2x), Pessoa3(1x)
+Pessoa3 - Pessoa2(2x), Pessoa5(3x)
+Pessoa4 - Pessoa3(1x), Pessoa5(2x)
+Pessoa5 - Pessoa4(4x)
+
+Pessoa1 Enviou 4x, Recebeu 2x
+Pessoa2 Enviou 3x, Recebeu 5x
+Pessoa3 Enviou 5x, Recebeu 3x
+Pessoa4 Enviou 3x, Recebeu 4x
+Pessoa5 Enviou 4x, Recebeu 5x
+
+Sorting por ENVIO:
+Pessoa3 Enviou 5x
+Pessoa5 Enviou 4x
+Pessoa1 Enviou 4x
+Pessoa4 Enviou 3x
+Pessoa2 Enviou 3x
+
+
+Sorting por RECEBIMENTO:
+Pessoa5 Recebeu 5x
+Pessoa2 Recebeu 5x
+Pessoa4 Recebeu 5x
+Pessoa3 Recebeu 3x
+Pessoa1 Recebeu 2x

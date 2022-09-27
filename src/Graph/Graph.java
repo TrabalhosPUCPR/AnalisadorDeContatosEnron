@@ -61,9 +61,47 @@ public class Graph {
         }
     }
 
-    public ArrayList<Node<?>> getShortestPath(int origin, int destination){
-        // TODO: 9/16/22 djikstra algorithm
+    public ArrayList<Node<?>> getLongestPath(Node<?> origin, Node<?> destination){
+        if(!this.search(origin.toString(), destination.toString())){
+            return new ArrayList<>();
+        }
+        Map<String, Integer> distances = new HashMap<>();
+        distances.put(origin.toString(), 0);
+
+        Set<Node<?>> nodesPassed = new HashSet<>();
+        String nodeWithMinDistance = origin.toString();
+
+        while(!(nodeWithMinDistance == null) && !(this.getNode(nodeWithMinDistance) == destination)){
+            Node<?> current = this.getNode(nodeWithMinDistance);
+            Node<?>[] adjacencies = current.getAdjacencies();
+
+            for(Node<?> n : adjacencies){
+                if(!nodesPassed.contains(n)){
+                    Integer newDistance = current.getWeight(n) + distances.get(n);
+                    if(distances.containsKey(n.toString()) && distances.get(n.toString()) > newDistance){
+                        distances.put(n.toString(), newDistance);
+                    }
+                }
+            }
+            nodesPassed.add(current);
+        }
+
         return new ArrayList<>();
+    }
+
+    private String getUnivistedNodeKeyWithMinDistance(Set<Node<?>> visited, Map<String, Integer> distance){
+        Integer[] distances = distance.values().toArray(new Integer[0]);
+        String[] keys = distance.keySet().toArray(new String[0]);
+
+        String lowestKey = "";
+        Integer lowestValue = 0;
+        for(int i = 0; i < distances.length; i++){
+            if(!visited.contains(this.getNode(keys[i])) && distances[i] < lowestValue && distances[i] != 0){
+                lowestValue = distances[i];
+                lowestKey = keys[i];
+            }
+        }
+        return lowestKey;
     }
 
     public boolean search(Object originKey, Object destinationKey){
@@ -108,7 +146,7 @@ public class Graph {
         }
         protected void addToNextVisitList(Node<?> next, boolean rev){
             Node<?>[] adjacency = next.getAdjacencies();
-            if (rev) reverse(adjacency);
+            if (rev) reverse(adjacency); // TODO: 9/27/2022 melhora isso 
             for(Node<?> node : adjacency){
                 if(!this.visitedNodes.contains(node.toString())){
                     this.nodeToVisitOrder.removeFirstOccurrence(node.toString());
@@ -193,6 +231,6 @@ public class Graph {
 
         System.out.println(graph.search(0, 5));
 
-        System.out.println("ShortestPath: " + graph.getShortestPath(0, graph.verticesSize()));
+        //System.out.println("ShortestPath: " + graph.getLongestPath(0, graph.verticesSize()));
     }
 }

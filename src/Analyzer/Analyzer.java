@@ -4,54 +4,16 @@ import Graph.Graph;
 import Graph.Node;
 
 import java.io.*;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Objects;
-
-/*      EXAMPLE EMAIL TO ANALYZE
-
-Message-ID: <28715254.1075858200633.JavaMail.evans@thyme>
-Date: Mon, 31 Jul 2000 09:22:00 -0700 (PDT)
-From: mike.carson@enron.com
-To: john.zufferli@enron.com, matt.lorenz@enron.com, john.berger@enron.com,
-	paul.broderick@enron.com, mark.davis@enron.com,
-	kevin.presto@enron.com, john.suarez@enron.com,
-	chad.starnes@enron.com, clint.dean@enron.com, kyle.schultz@enron.com,
-	rogers.herndon@enron.com, robert.benson@enron.com,
-	doug.gilbert-smith@enron.com, rlmichaelis@hormel.com,
-	dttowns@swbell.net, greg.woulfe@enron.com,
-	seanoneal@worldnet.att.net, ashton.soniat@enron.com
-Subject: Baby Party/Shower
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-From: Mike Carson
-X-To: John Zufferli, Matt Lorenz, John Berger, Paul J Broderick, Mark Dana Davis, Kevin M Presto, John D Suarez, Chad Starnes, Clint Dean, Kyle Schultz, Rogers Herndon, Robert Benson, Doug Gilbert-Smith, rlmichaelis@hormel.com, dttowns@swbell.net, Greg Woulfe, seanoneal@worldnet.att.net, Ashton Soniat
-X-cc:
-X-bcc:
-X-Folder: \Mike_Carson_Dec2000\Notes Folders\'sent mail
-X-Origin: Carson-M
-X-FileName: mcarson2.nsf
-
-Some friends of my wife and I are throwing a little bash on the evening of
-September 9th for my upcoming baby BOY.   I would like to invite you all to
-attend.  I believe there will be a margarita machine....
-
-If you want to come,, please reply by sending me your address.  You will then
-recieve an invitation by mail.
-
-Hope to see you there,,
-
-Mike
- */
+import java.util.*;
 
 public class Analyzer {
     final Graph graph;
-    final String dataPath;
+    final String dataPath, sentEmailFolder;
 
-    public Analyzer(String dataPath) {
+    public Analyzer(String dataPath, String emailFolderName) {
         this.dataPath = dataPath;
         this.graph = new Graph();
+        this.sentEmailFolder = emailFolderName;
         createGraph();
     }
 
@@ -59,15 +21,15 @@ public class Analyzer {
         return graph;
     }
 
-    private void addAdjacency(Node<?> userNode, String line){
+    private void addAdjacency(String userNode, String line){
         String[] emails = line.split(", ");
         try {
             for(String email : emails){
                 exists : {
                     Node<?> newNode = new Node<>(email);
-                    Node<?> adjacentNode = userNode.getAdjacency(email);
+                    Node<?> adjacentNode = this.graph.getNode(userNode).getAdjacency(email);
                     if(adjacentNode != null){
-                        userNode.setWeight(email, userNode.getWeight(email) + 1);
+                        this.graph.getNode(userNode).setWeight(email, this.graph.getNode(userNode).getWeight(email) + 1);
                         break exists;
                     }
                     this.graph.add(newNode);
@@ -81,30 +43,37 @@ public class Analyzer {
 
     private String getUserEmail(String userSentEmailDirectoty) throws IOException {
         BufferedReader reader = new BufferedReader(new FileReader(userSentEmailDirectoty + "/1"));
-        while(!reader.readLine().startsWith("Date:")){}
-        return reader.readLine().substring(6);
+        String line = reader.readLine();
+        while(!line.startsWith("From:")){
+            line = reader.readLine();
+        }
+        return line.substring(6);
     }
 
     private void createGraph(){
         File folder = new File(this.dataPath);
         for(File userFolder : Objects.requireNonNull(folder.listFiles())){
             try{
-                File userSentEmailsFolder = new File(userFolder.getPath() + "/_sent_mail");
+                File userSentEmailsFolder = new File(userFolder.getPath() + "/" + this.sentEmailFolder);
                 Node<String> userNode = new Node<>(getUserEmail(userSentEmailsFolder.getPath()));
                 this.graph.add(userNode);
                 System.out.println(userNode.getLabel());
                 for(File userSentEmails : Objects.requireNonNull(userSentEmailsFolder.listFiles())){
                     BufferedReader reader = new BufferedReader(new FileReader(userSentEmails));
+
+                    // os destinatarios vao sempre estar na terceira linha, e melhor fazer assim doq um while ate encontrar um "To:" pq pode ter outras linhas q comecam com isso tb,
+                    // entao teria q fazer um contador pra ter algum limite, q e relativo a so fazer esse for
                     for (int i = 0; i < 3; i ++){
                         reader.readLine();
                     }
+
                     String line = reader.readLine();
-                    if(line.startsWith("To:")){
+                    if(line.startsWith("To:")){ // ai so verifica se a linha comeca com o "To:" mesmo
                         line = line.substring(4);
-                        addAdjacency(userNode, line);
+                        addAdjacency(userNode.toString(), line);
                         line = reader.readLine();
                         while (line.startsWith("\t")){
-                            addAdjacency(userNode, line.substring(1));
+                            addAdjacency(userNode.toString(), line.substring(1));
                             line = reader.readLine();
                         }
                     }
@@ -115,10 +84,10 @@ public class Analyzer {
         }
     }
 
-    private Node<?>[] getTopReceivers(){
+    public List<?> getTopReceivers(int number){
         HashMap<String, Integer> hashMap = new HashMap<>();
         for(Node<?> n : this.graph.getNodes()){
-            hashMap.put(n.getLabel().toString(), 1);
+            hashMap.put(n.getLabel().toString(), 0);
         }
         for(Node<?> n : this.graph.getNodes()){
             for(Node<?> ad : n.getAdjacencies()){
@@ -130,7 +99,7 @@ public class Analyzer {
         String[] keys = hashMap.keySet().toArray(new String[0]);
         Integer[] numbers = hashMap.values().toArray(new Integer[0]);
 
-        heapsort(keys, Arrays.stream(numbers).mapToInt(Integer::intValue).toArray());
+        heapReverseSort(keys, numbers);
 
         Node<?>[] nodes = new Node<?>[keys.length];
 
@@ -138,32 +107,33 @@ public class Analyzer {
             nodes[i] = this.graph.getNode(keys[i]);
         }
 
-        return nodes;
+        List<List<?>> result = new ArrayList<>();
+
+        result.add(Arrays.asList(nodes).subList(0, number));
+        result.add(Arrays.asList(numbers).subList(0, number));
+        return result;
     }
 
-    public Node<?>[] getTopReceivers(int number){
-        Node<?>[] result = getTopReceivers();
-        return Arrays.copyOf(result, number);
-    }
-
-    private Node<?>[] getTopSenders(){
-        Node<?>[] senders = this.graph.getNodes();
-        int[] messages = new int[senders.length];
-        for(int i = 0; i < senders.length; i++){
-            messages[i] = senders[i].sumWeights();
+    public List<?> getTopSenders(int number){
+        List<List<?>> result = new ArrayList<>();
+        try {
+            Node<?>[] senders = this.graph.getNodes();
+            Integer[] messages = new Integer[senders.length];
+            for (int i = 0; i < senders.length; i++) {
+                messages[i] = senders[i].sumWeights();
+            }
+            heapReverseSort(senders, messages);
+            result.add(Arrays.asList(senders).subList(0, number));
+            result.add(Arrays.asList(messages).subList(0, number));
+        }catch (Exception e){
+            System.out.println("O numero digitado e muito grande!");
         }
-        heapsort(senders, messages);
-        return senders;
+        return result;
     }
 
-    public Node<?>[] getTopSenders(int number){
-        Node<?>[] result = getTopSenders();
-        return Arrays.copyOf(result, number);
-    }
-
-    private static void heapsort(Object[] nodes, int[] weights) {
+    private static void heapReverseSort(Object[] nodes, Integer[] weights) {
         int n = weights.length;
-        for (int i = n / 2 - 1; i >= 0; i--) heapify(nodes, weights, n, i);
+        for (int i = n / 2 - 1; i >= 0; i--) MinHeapify(nodes, weights, n, i);
         for (int i = n - 1; i > 0; i--) {
             int temp = weights[0];
             Object tempNode = nodes[0];
@@ -171,11 +141,11 @@ public class Analyzer {
             nodes[0] = nodes[i];
             weights[i] = temp;
             nodes[i] = tempNode;
-            heapify(nodes, weights, i, 0);
+            MinHeapify(nodes, weights, i, 0);
         }
     }
 
-    private static void heapify(Object[] nodes, int[] weights, int n, int i) {
+    private static void MinHeapify(Object[] nodes, Integer[] weights, int n, int i) {
         int smallest = i;
         int l = 2 * i + 1;
         int r = 2 * i + 2;
@@ -188,7 +158,7 @@ public class Analyzer {
             nodes[i] = nodes[smallest];
             weights[smallest] = swap;
             nodes[smallest] = swapNode;
-            heapify(nodes, weights, n, smallest);
+            MinHeapify(nodes, weights, n, smallest);
         }
     }
 }

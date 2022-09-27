@@ -1,19 +1,25 @@
 import Analyzer.Analyzer;
-import Graph.*;
 
-import java.util.Arrays;
+import Graph.*;
+import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
-        Analyzer analyzer = new Analyzer("Data/Amostra Enron");
+        ///*
+        Analyzer analyzer = new Analyzer("Data/Amostra Enron", "_sent_mail");
+        //Analyzer analyzer = new Analyzer("Data/mockData", "sent");
         System.out.println(analyzer.getGraph());
 
         System.out.print("Top senders: ");
-        Node<?>[] topSenders = analyzer.getTopSenders(20);
-        System.out.println(Arrays.toString(topSenders));
+        List<?> topSenders = analyzer.getTopSenders(5);
+        System.out.println(topSenders);
 
         System.out.print("Top receivers: ");
-        Node<?>[] topReceivers = analyzer.getTopReceivers(20);
-        System.out.println(Arrays.toString(topReceivers));
+        List<?> topReceivers = analyzer.getTopReceivers(5);
+        System.out.println(topReceivers);
+
+         //*/
+
+        //Graph.debugGraph();
     }
 }
