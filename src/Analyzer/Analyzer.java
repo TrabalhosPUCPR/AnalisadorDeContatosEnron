@@ -5,6 +5,7 @@ import Graph.Node;
 
 import java.io.*;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Objects;
 
 /*      EXAMPLE EMAIL TO ANALYZE
@@ -112,6 +113,24 @@ public class Analyzer {
                 System.err.println(userFolder.getName() + " has no sent emails!");
             }
         }
+    }
+
+    private Node<?>[] getTopReceivers(){
+        HashMap<String, Integer> hashMap = new HashMap<>();
+        for(Node<?> n : this.graph.getNodes()){
+            hashMap.put(n.getLabel().toString(), 1);
+        }
+        for(Node<?> n : this.graph.getNodes()){
+            for(Node<?> ad : n.getAdjacencies()){
+                String adjacentLabel = ad.getLabel().toString();
+                hashMap.put(adjacentLabel, hashMap.get(adjacentLabel) + n.getWeight(adjacentLabel));
+            }
+        }
+
+        String[] keys = hashMap.keySet().toArray(new String[0]);
+        Integer[] numbers = hashMap.values().toArray(new Integer[0]);
+        
+        return new Node<?>[0];
     }
 
     private Node<?>[] getTopSenders(){

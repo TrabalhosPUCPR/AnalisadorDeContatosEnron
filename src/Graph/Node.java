@@ -81,6 +81,10 @@ public class Node<T> {
         return this.adjacencies.values().toArray(adjacencyHolders);
     }
 
+    public AdjacencyHolder getAdjacencyHolder(String key){
+        return this.adjacencies.get(key);
+    }
+
     public void setWeight(Object adjacentNode, int weights){
         this.adjacencies.get(adjacentNode.toString()).setWeight(weights);
     }
