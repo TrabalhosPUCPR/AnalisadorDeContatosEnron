@@ -61,63 +61,62 @@ public class Graph {
         }
     }
 
-    public ArrayList<Node<?>> getLongestPath(Object originKey, Object destinationKey){
-        return this.getLongestPath(this.getNode(originKey), this.getNode(destinationKey));
+    public List<Node<?>> getShortestPath(Object originKey, Object destinationKey){
+        return this.getShortestPath(this.getNode(originKey), this.getNode(destinationKey));
     }
 
-    public ArrayList<Node<?>> getLongestPath(Node<?> origin, Node<?> destination){
+    public List<Node<?>> getShortestPath(Node<?> origin, Node<?> destination){
         if(!this.search(origin.toString(), destination.toString())){
             return new ArrayList<>();
         }
         Map<String, Integer> distances = new HashMap<>();
-        Map<String, ArrayList<Node<?>>> path = new HashMap<>();
-        for(Node<?> n : this.getNodes()){
-            distances.put(n.toString(), Integer.MAX_VALUE);
-            path.put(n.toString(), new ArrayList<>());
-        }
         distances.put(origin.toString(), 0);
 
         Set<Node<?>> nodesPassed = new HashSet<>();
-        Queue<String> line = new PriorityQueue<>();
-        line.add(origin.toString());
+        List<Node<?>> nodeToVisit = new ArrayList<>();
+        nodeToVisit.add(origin);
 
-        while(!line.isEmpty() && !(line.peek().equals(destination.toString()))){
-            Node<?> current = this.getNode(line.poll());
+        Map<String, Node<?>> previousNode = new HashMap<>();
+        while(!nodeToVisit.isEmpty()){
+            Node<?> current = getUnvisitedNodeWithMinDistance(nodeToVisit, distances);
             Node<?>[] adjacencies = current.getAdjacencies();
             for(Node<?> n : adjacencies){
                 if(!nodesPassed.contains(n)){
-                    int adj_dist = distances.get(n.toString());
-                    int newDistance = current.getWeight(n) + (adj_dist == Integer.MAX_VALUE ? 0 : adj_dist);
-                    if(distances.get(n.toString()) > newDistance){
+                    Integer currentsDistance = distances.get(current.toString());
+                    int newDistance = current.getWeight(n) + (currentsDistance == null ? 0 : currentsDistance);
+                    if(!distances.containsKey(n.toString()) || distances.get(n.toString()) > newDistance){
                         distances.put(n.toString(), newDistance);
-                        ArrayList<Node<?>> currentsPath = new ArrayList<>(path.get(current.toString()));
-                        currentsPath.add(current);
-                        path.put(n.toString(), currentsPath);
+                        previousNode.put(n.toString(), current);
                     }
-                    if(!line.contains(n.toString())){
-                        line.add(n.toString());
+                    if(!nodeToVisit.contains(n) && !n.equals(destination)){
+                        nodeToVisit.add(n);
                     }
                 }
             }
             nodesPassed.add(current);
         }
-
-        return new ArrayList<>();
+        List<Node<?>> shortestPath = new ArrayList<>();
+        shortestPath.add(destination);
+        Node<?> current = previousNode.get(destination.toString());
+        while(!current.equals(origin)){
+            shortestPath.add(current);
+            current = previousNode.get(current.toString());
+        }
+        shortestPath.add(origin);
+        Collections.reverse(shortestPath);
+        return shortestPath;
     }
 
-    private String getUnivistedNodeKeyWithMinDistance(Set<Node<?>> visited, Map<String, Integer> distance){
-        Integer[] distances = distance.values().toArray(new Integer[0]);
-        String[] keys = distance.keySet().toArray(new String[0]);
-
-        String lowestKey = "";
-        Integer lowestValue = 0;
-        for(int i = 0; i < distances.length; i++){
-            if(!visited.contains(this.getNode(keys[i])) && distances[i] < lowestValue && distances[i] != 0){
-                lowestValue = distances[i];
-                lowestKey = keys[i];
+    private Node<?> getUnvisitedNodeWithMinDistance(List<Node<?>> nodesToVisit, Map<String, Integer> distance){
+        int lowestNodeIndex = 0;
+        Integer lowestValue = Integer.MAX_VALUE;
+        for(int i = 0; i < nodesToVisit.size(); i++){
+            if(!distance.containsKey(nodesToVisit.get(i).toString()) || lowestValue > distance.get(nodesToVisit.get(i).toString())){
+                lowestValue = distance.get(nodesToVisit.get(i).toString());
+                lowestNodeIndex = i;
             }
         }
-        return lowestKey;
+        return nodesToVisit.remove(lowestNodeIndex);
     }
 
     public boolean search(Object originKey, Object destinationKey){
@@ -212,22 +211,38 @@ public class Graph {
     
     public static void debugGraph(){
         Graph graph = new Graph();
-        for(int i = 1; i < 8; i++){
-            graph.add(new Node<>(i));
-        }
 
-        graph.newNonDirectedAdjacency(1, 2, 5);
-        graph.newNonDirectedAdjacency(1, 4, 15);
-        graph.newNonDirectedAdjacency(1, 5, 1);
-        graph.newNonDirectedAdjacency(2, 3, 45);
-        graph.newNonDirectedAdjacency(2, 5, 55);
-        graph.newNonDirectedAdjacency(2, 6, 5);
-        graph.newNonDirectedAdjacency(3, 7, 21);
-        graph.newNonDirectedAdjacency(3, 6, 5);
-        graph.newNonDirectedAdjacency(4, 5, 4);
-        graph.newNonDirectedAdjacency(5, 6, 8);
-        graph.newNonDirectedAdjacency(6, 7, 9);
-        graph.newNonDirectedAdjacency(7, 4, 7);
+        //String[] keys = {"A", "B", "C", "D", "E", "F"};
+        int[] keys = {0, 1, 2, 3, 4, 5, 6, 7, 8};
+        for(Object key : keys) {
+            graph.add(new Node<>(key));
+        }
+        /*
+        graph.newNonDirectedAdjacency("A", "B", 2);
+        graph.newNonDirectedAdjacency("A", "D", 8);
+        graph.newNonDirectedAdjacency("B", "D", 5);
+        graph.newNonDirectedAdjacency("B", "E", 6);
+        graph.newNonDirectedAdjacency("D", "E", 3);
+        graph.newNonDirectedAdjacency("D", "F", 2);
+        graph.newNonDirectedAdjacency("E", "F", 1);
+        graph.newNonDirectedAdjacency("E", "C", 9);
+        graph.newNonDirectedAdjacency("F", "C", 3);
+        */
+
+        graph.newNonDirectedAdjacency(0, 1, 4);
+        graph.newNonDirectedAdjacency(0, 7, 8);
+        graph.newNonDirectedAdjacency(1, 7, 11);
+        graph.newNonDirectedAdjacency(1, 2, 8);
+        graph.newNonDirectedAdjacency(2, 8, 2);
+        graph.newNonDirectedAdjacency(2, 3, 7);
+        graph.newNonDirectedAdjacency(2, 5, 4);
+        graph.newNonDirectedAdjacency(8, 7, 7);
+        graph.newNonDirectedAdjacency(7, 6, 1);
+        graph.newNonDirectedAdjacency(8, 6, 6);
+        graph.newNonDirectedAdjacency(6, 5, 2);
+        graph.newNonDirectedAdjacency(5, 3, 14);
+        graph.newNonDirectedAdjacency(5, 4, 10);
+        graph.newNonDirectedAdjacency(3, 4, 9);
 
         graph.printAdjacencies();
 
@@ -245,9 +260,9 @@ public class Graph {
         }
         System.out.println();
 
-        System.out.println(graph.search(0, 5));
+        System.out.println(graph.search(0, 4));
 
         //System.out.println("ShortestPath: " + graph.getShortestPath(0, graph.verticesSize()));
-        System.out.println("LongestPath: " + graph.getLongestPath(1, 7));
+        System.out.println("LongestPath: " + graph.getShortestPath(0, 4));
     }
 }
