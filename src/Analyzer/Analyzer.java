@@ -9,6 +9,7 @@ import java.util.*;
 public class Analyzer {
     final Graph graph;
     final String dataPath, sentEmailFolder;
+    private final int DESTINATION_LINE = 1;
 
     public Analyzer(String dataPath, String emailFolderName) {
         this.dataPath = dataPath;
@@ -41,33 +42,29 @@ public class Analyzer {
         }
     }
 
-    private String getUserEmail(String userSentEmailDirectoty) throws IOException {
-        BufferedReader reader = new BufferedReader(new FileReader(userSentEmailDirectoty + "/1"));
-        String line = reader.readLine();
-        while(!line.startsWith("From:")){
-            line = reader.readLine();
-        }
-        return line.substring(6);
-    }
-
     private void createGraph(){
         File folder = new File(this.dataPath);
         for(File userFolder : Objects.requireNonNull(folder.listFiles())){
             try{
                 File userSentEmailsFolder = new File(userFolder.getPath() + "/" + this.sentEmailFolder);
-                Node<String> userNode = new Node<>(getUserEmail(userSentEmailsFolder.getPath()));
-                this.graph.add(userNode);
-                System.out.println(userNode.getLabel());
+                if(!userSentEmailsFolder.isDirectory()){
+                    continue;
+                }
+                System.out.println(userFolder.getName());
                 for(File userSentEmails : Objects.requireNonNull(userSentEmailsFolder.listFiles())){
                     BufferedReader reader = new BufferedReader(new FileReader(userSentEmails));
 
                     // os destinatarios vao sempre estar na terceira linha, e melhor fazer assim doq um while ate encontrar um "To:" pq pode ter outras linhas q comecam com isso tb,
                     // entao teria q fazer um contador pra ter algum limite, q e relativo a so fazer esse for
-                    for (int i = 0; i < 3; i ++){
-                        reader.readLine();
+                    String line = reader.readLine();
+                    while(!line.startsWith("From: ")){
+                        line = reader.readLine();
                     }
 
-                    String line = reader.readLine();
+                    Node<String> userNode = new Node<>(line.substring(6));
+                    this.graph.add(userNode);
+
+                    line = reader.readLine();
                     if(line.startsWith("To:")){ // ai so verifica se a linha comeca com o "To:" mesmo
                         line = line.substring(4);
                         addAdjacency(userNode.toString(), line);
@@ -79,7 +76,7 @@ public class Analyzer {
                     }
                 }
             }catch (Exception e){
-                System.err.println(userFolder.getName() + " has no sent emails!");
+                System.err.println(userFolder.getName() + ": " + e);
             }
         }
     }
@@ -87,12 +84,12 @@ public class Analyzer {
     public List<?> getTopReceivers(int number){
         HashMap<String, Integer> hashMap = new HashMap<>();
         for(Node<?> n : this.graph.getNodes()){
-            hashMap.put(n.getLabel().toString(), 0);
+            hashMap.put(n.toString(), 0);
         }
         for(Node<?> n : this.graph.getNodes()){
             for(Node<?> ad : n.getAdjacencies()){
-                String adjacentLabel = ad.getLabel().toString();
-                hashMap.put(adjacentLabel, hashMap.get(adjacentLabel) + n.getWeight(adjacentLabel));
+                String adjacentLabel = ad.toString();
+                hashMap.put(adjacentLabel, hashMap.get(adjacentLabel) + 1);
             }
         }
 
@@ -120,13 +117,13 @@ public class Analyzer {
             Node<?>[] senders = this.graph.getNodes();
             Integer[] messages = new Integer[senders.length];
             for (int i = 0; i < senders.length; i++) {
-                messages[i] = senders[i].sumWeights();
+                messages[i] = senders[i].getAdjacencies().length;
             }
             heapReverseSort(senders, messages);
             result.add(Arrays.asList(senders).subList(0, number));
             result.add(Arrays.asList(messages).subList(0, number));
         }catch (Exception e){
-            System.out.println("O numero digitado e muito grande!");
+            System.err.println("The number is too big!");
         }
         return result;
     }

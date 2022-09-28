@@ -61,25 +61,41 @@ public class Graph {
         }
     }
 
+    public ArrayList<Node<?>> getLongestPath(Object originKey, Object destinationKey){
+        return this.getLongestPath(this.getNode(originKey), this.getNode(destinationKey));
+    }
+
     public ArrayList<Node<?>> getLongestPath(Node<?> origin, Node<?> destination){
         if(!this.search(origin.toString(), destination.toString())){
             return new ArrayList<>();
         }
         Map<String, Integer> distances = new HashMap<>();
+        Map<String, ArrayList<Node<?>>> path = new HashMap<>();
+        for(Node<?> n : this.getNodes()){
+            distances.put(n.toString(), Integer.MAX_VALUE);
+            path.put(n.toString(), new ArrayList<>());
+        }
         distances.put(origin.toString(), 0);
 
         Set<Node<?>> nodesPassed = new HashSet<>();
-        String nodeWithMinDistance = origin.toString();
+        Queue<String> line = new PriorityQueue<>();
+        line.add(origin.toString());
 
-        while(!(nodeWithMinDistance == null) && !(this.getNode(nodeWithMinDistance) == destination)){
-            Node<?> current = this.getNode(nodeWithMinDistance);
+        while(!line.isEmpty() && !(line.peek().equals(destination.toString()))){
+            Node<?> current = this.getNode(line.poll());
             Node<?>[] adjacencies = current.getAdjacencies();
-
             for(Node<?> n : adjacencies){
                 if(!nodesPassed.contains(n)){
-                    Integer newDistance = current.getWeight(n) + distances.get(n);
-                    if(distances.containsKey(n.toString()) && distances.get(n.toString()) > newDistance){
+                    int adj_dist = distances.get(n.toString());
+                    int newDistance = current.getWeight(n) + (adj_dist == Integer.MAX_VALUE ? 0 : adj_dist);
+                    if(distances.get(n.toString()) > newDistance){
                         distances.put(n.toString(), newDistance);
+                        ArrayList<Node<?>> currentsPath = new ArrayList<>(path.get(current.toString()));
+                        currentsPath.add(current);
+                        path.put(n.toString(), currentsPath);
+                    }
+                    if(!line.contains(n.toString())){
+                        line.add(n.toString());
                     }
                 }
             }
@@ -231,6 +247,7 @@ public class Graph {
 
         System.out.println(graph.search(0, 5));
 
-        //System.out.println("ShortestPath: " + graph.getLongestPath(0, graph.verticesSize()));
+        //System.out.println("ShortestPath: " + graph.getShortestPath(0, graph.verticesSize()));
+        System.out.println("LongestPath: " + graph.getLongestPath(1, 7));
     }
 }
