@@ -1,7 +1,5 @@
 package Graph;
 
-import java.util.LinkedList;
-
 public class BfsIterator extends SearchIterator{
     private int layer = -1;
     private int nextLayerSize = 0;
@@ -22,6 +20,14 @@ public class BfsIterator extends SearchIterator{
         visited.add(nextNode);
         this.addToList(nextNode);
         return nextNode;
+    }
+
+    public int nextIterationLayer(){
+        if(this.currentLayerLeft <= 0){
+            return layer + 1;
+        }else{
+            return layer;
+        }
     }
 
     private void updateLayer(){

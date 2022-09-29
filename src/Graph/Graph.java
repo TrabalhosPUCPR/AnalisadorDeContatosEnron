@@ -133,31 +133,68 @@ public class Graph {
         return false;
     }
 
+    public List<?> adjacentNodesAtDistance(Object origin, int distance){
+        return this.adjacentNodesAtDistance(this.getNode(origin.toString()), distance);
+    }
+    public List<?> adjacentNodesAtDistance(Node<?> origin, int distance){
+        BfsIterator bfs = new BfsIterator(origin);
+        List<Node<?>> nodes = new ArrayList<>();
+        while(bfs.ready() && !(bfs.nextIterationLayer() == distance)){
+            bfs.next();
+        }
+        while (bfs.ready() && bfs.nextIterationLayer() == distance){
+            nodes.add(bfs.next());
+        }
+        return nodes;
+    }
+
     @Override
     public String toString() {
         return Arrays.toString(this.nodes.values().toArray());
+    }
+
+    private static void createGraph(Graph graph, Object[] keys){
+        for(Object key : keys) {
+            graph.add(new Node<>(key));
+        }
     }
     
     public static void debugGraph(){
         Graph graph = new Graph();
 
-        //String[] keys = {"A", "B", "C", "D", "E", "F"};
-        int[] keys = {0, 1, 2, 3, 4, 5, 6, 7, 8};
-        for(Object key : keys) {
-            graph.add(new Node<>(key));
-        }
+        int distance = 2;
+
+        ///*
+        String[] keys = {"s", "a", "b", "c", "d", "e"};
+
+        createGraph(graph, keys);
+        String iteratorStart = "s";
+        String searchOrigin = "s";
+        String searchEnd = "e";
+        String pathStart = "s";
+        String pathEnd = "e";
+
+        https://www.gatevidyalay.com/wp-content/uploads/2018/03/Dijkstra-Algorithm-Problem-01.png
+        graph.newAdjacency("s", "a", 1);
+        graph.newAdjacency("s", "b", 5);
+        graph.newAdjacency("a", "b", 2);
+        graph.newAdjacency("a", "c", 2);
+        graph.newAdjacency("a", "d", 1);
+        graph.newAdjacency("b", "d", 2);
+        graph.newAdjacency("c", "d", 3);
+        graph.newAdjacency("c", "e", 1);
+        graph.newAdjacency("d", "e", 2);
+        //*/
 
         /*
-        graph.newNonDirectedAdjacency("A", "B", 2);
-        graph.newNonDirectedAdjacency("A", "D", 8);
-        graph.newNonDirectedAdjacency("B", "D", 5);
-        graph.newNonDirectedAdjacency("B", "E", 6);
-        graph.newNonDirectedAdjacency("D", "E", 3);
-        graph.newNonDirectedAdjacency("D", "F", 2);
-        graph.newNonDirectedAdjacency("E", "F", 1);
-        graph.newNonDirectedAdjacency("E", "C", 9);
-        graph.newNonDirectedAdjacency("F", "C", 3);
-        */
+        Object[] keys = {0, 1, 2, 3, 4, 5, 6, 7, 8};
+
+        createGraph(graph, keys);
+        int iteratorStart = 0;
+        int searchOrigin = 0;
+        int searchEnd = 4;
+        int pathStart = 0;
+        int pathEnd = 4;
 
         // https://www.geeksforgeeks.org/wp-content/uploads/Fig-11.jpg
         graph.newNonDirectedAdjacency(0, 1, 4);
@@ -174,11 +211,12 @@ public class Graph {
         graph.newNonDirectedAdjacency(5, 3, 14);
         graph.newNonDirectedAdjacency(5, 4, 10);
         graph.newNonDirectedAdjacency(3, 4, 9);
-
+        */
+        
         graph.printAdjacencies();
 
-        BfsIterator bfsIterator = new BfsIterator(graph.getNode(0));
-        DfsIterator dfsIterator = new DfsIterator(graph.getNode(0));
+        BfsIterator bfsIterator = new BfsIterator(graph.getNode(iteratorStart));
+        DfsIterator dfsIterator = new DfsIterator(graph.getNode(iteratorStart));
 
         System.out.print("BFS: ");
         while(bfsIterator.ready()){
@@ -191,9 +229,11 @@ public class Graph {
         }
         System.out.println();
 
-        System.out.println(graph.search(0, 4));
+        System.out.println(graph.search(searchOrigin, searchEnd));
 
-        System.out.println("ShortestPath: " + graph.getShortestPath(0, 4));
-        System.out.println("LongestPath: " + graph.getLongestPath(0, 4));
+        System.out.println("ShortestPath: " + graph.getShortestPath(pathStart, pathEnd));
+        System.out.println("LongestPath: " + graph.getLongestPath(pathStart, pathEnd));
+
+        System.out.println("Nodes at distance 3 from node: " + graph.adjacentNodesAtDistance(pathStart, distance));
     }
 }
