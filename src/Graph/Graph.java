@@ -61,16 +61,20 @@ public class Graph {
         }
     }
 
-    public List<Node<?>> getShortestPath(Object originKey, Object destinationKey){
-        return this.getShortestPath(this.getNode(originKey), this.getNode(destinationKey));
+    public List<Node<?>> getLongestPath(Object originKey, Object destinationKey){
+        return this.getShortLongPath(this.getNode(originKey), this.getNode(destinationKey), false);
     }
 
-    public List<Node<?>> getShortestPath(Node<?> origin, Node<?> destination){
+    public List<Node<?>> getShortestPath(Object originKey, Object destinationKey){
+        return this.getShortLongPath(this.getNode(originKey), this.getNode(destinationKey), true);
+    }
+
+    private List<Node<?>> getShortLongPath(Node<?> origin, Node<?> destination, boolean shortest){
         if(!this.search(origin.toString(), destination.toString())){
             return new ArrayList<>();
         }
-        Map<String, Integer> distances = new HashMap<>();
-        distances.put(origin.toString(), 0);
+        Map<String, Double> distances = new HashMap<>();
+        distances.put(origin.toString(), 0.0);
 
         Set<Node<?>> nodesPassed = new HashSet<>();
         List<Node<?>> nodeToVisit = new ArrayList<>();
@@ -82,8 +86,8 @@ public class Graph {
             Node<?>[] adjacencies = current.getAdjacencies();
             for(Node<?> n : adjacencies){
                 if(!nodesPassed.contains(n)){
-                    Integer currentsDistance = distances.get(current.toString());
-                    int newDistance = current.getWeight(n) + (currentsDistance == null ? 0 : currentsDistance);
+                    Double currentsDistance = distances.get(current.toString());
+                    double newDistance = Math.pow((current.getWeight(n) + (currentsDistance == null ? 0 : currentsDistance)), (shortest ? 1 : -1));
                     if(!distances.containsKey(n.toString()) || distances.get(n.toString()) > newDistance){
                         distances.put(n.toString(), newDistance);
                         previousNode.put(n.toString(), current);
@@ -107,9 +111,9 @@ public class Graph {
         return shortestPath;
     }
 
-    private Node<?> getUnvisitedNodeWithMinDistance(List<Node<?>> nodesToVisit, Map<String, Integer> distance){
+    private Node<?> getUnvisitedNodeWithMinDistance(List<Node<?>> nodesToVisit, Map<String, Double> distance){
         int lowestNodeIndex = 0;
-        Integer lowestValue = Integer.MAX_VALUE;
+        Double lowestValue = Double.MAX_VALUE;
         for(int i = 0; i < nodesToVisit.size(); i++){
             if(!distance.containsKey(nodesToVisit.get(i).toString()) || lowestValue > distance.get(nodesToVisit.get(i).toString())){
                 lowestValue = distance.get(nodesToVisit.get(i).toString());
@@ -217,6 +221,7 @@ public class Graph {
         for(Object key : keys) {
             graph.add(new Node<>(key));
         }
+
         /*
         graph.newNonDirectedAdjacency("A", "B", 2);
         graph.newNonDirectedAdjacency("A", "D", 8);
@@ -229,6 +234,7 @@ public class Graph {
         graph.newNonDirectedAdjacency("F", "C", 3);
         */
 
+        // https://www.geeksforgeeks.org/wp-content/uploads/Fig-11.jpg
         graph.newNonDirectedAdjacency(0, 1, 4);
         graph.newNonDirectedAdjacency(0, 7, 8);
         graph.newNonDirectedAdjacency(1, 7, 11);
@@ -246,8 +252,8 @@ public class Graph {
 
         graph.printAdjacencies();
 
-        Graph.BfsIterator bfsIterator = new Graph.BfsIterator(1, graph);
-        Graph.DfsIterator dfsIterator = new Graph.DfsIterator(1, graph);
+        Graph.BfsIterator bfsIterator = new Graph.BfsIterator(0, graph);
+        Graph.DfsIterator dfsIterator = new Graph.DfsIterator(0, graph);
 
         System.out.print("BFS: ");
         while(bfsIterator.next(false) != null){
@@ -262,7 +268,7 @@ public class Graph {
 
         System.out.println(graph.search(0, 4));
 
-        //System.out.println("ShortestPath: " + graph.getShortestPath(0, graph.verticesSize()));
-        System.out.println("LongestPath: " + graph.getShortestPath(0, 4));
+        System.out.println("ShortestPath: " + graph.getShortestPath(0, 4));
+        System.out.println("LongestPath: " + graph.getLongestPath(0, 4));
     }
 }

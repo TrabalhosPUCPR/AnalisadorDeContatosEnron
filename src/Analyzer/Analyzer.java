@@ -9,7 +9,6 @@ import java.util.*;
 public class Analyzer {
     final Graph graph;
     final String dataPath, sentEmailFolder;
-    private final int DESTINATION_LINE = 1;
 
     public Analyzer(String dataPath, String emailFolderName) {
         this.dataPath = dataPath;
