@@ -62,15 +62,15 @@ public class Graph {
         }
     }
 
-    public List<Node<?>> getLongestPath(Object originKey, Object destinationKey){ // chama o algoritmo de djikstra com o parametro especifio
+    public List<Object> getLongestPath(Object originKey, Object destinationKey){ // chama o algoritmo de djikstra com o parametro especifio
         return this.getShortLongPath(this.getNode(originKey), this.getNode(destinationKey), false);
     }
 
-    public List<Node<?>> getShortestPath(Object originKey, Object destinationKey){
+    public List<Object> getShortestPath(Object originKey, Object destinationKey){
         return this.getShortLongPath(this.getNode(originKey), this.getNode(destinationKey), true);
     }
 
-    private List<Node<?>> getShortLongPath(Node<?> origin, Node<?> destination, boolean shortest){
+    private List<Object> getShortLongPath(Node<?> origin, Node<?> destination, boolean shortest){
         if(!this.search(origin.toString(), destination.toString())){ // caso nao exista conexao entre a origem e destino, retorna vazio
             return new ArrayList<>();
         }
@@ -78,7 +78,9 @@ public class Graph {
         // instancializa todas as variaveis:
         // distancias, visitados, nodes pra visitar, node anterior
         Map<String, Double> distances = new HashMap<>();
+        Map<String, Integer> actualDistances = new HashMap<>();
         distances.put(origin.toString(), 0.0);
+        actualDistances.put(origin.toString(), 0);
 
         Set<Node<?>> nodesPassed = new HashSet<>();
         List<Node<?>> nodeToVisit = new ArrayList<>();
@@ -105,15 +107,18 @@ public class Graph {
             nodesPassed.add(current); // adiciona o node visitado como visitado
         }
         // recria o array do caminho percorrido, pegando o node destino e indo para o node definido como anterior
-        List<Node<?>> shortestPath = new ArrayList<>();
-        shortestPath.add(destination);
+        List<Object> shortestPath = new ArrayList<>();
+        ArrayList<Node<?>> path = new ArrayList<>();
+        path.add(destination);
         Node<?> current = previousNode.get(destination.toString());
         while(!current.equals(origin)){
-            shortestPath.add(current);
+            path.add(current);
             current = previousNode.get(current.toString());
         }
-        shortestPath.add(origin);
-        Collections.reverse(shortestPath);
+        path.add(origin);
+        shortestPath.add(path);
+        shortestPath.add(shortest ? distances.get(destination.toString()) : Math.pow(distances.get(destination.toString()), -1));
+        Collections.reverse(path);
         return shortestPath;
     }
 
@@ -180,7 +185,7 @@ public class Graph {
         String pathStart = "s";
         String pathEnd = "e";
 
-        https://www.gatevidyalay.com/wp-content/uploads/2018/03/Dijkstra-Algorithm-Problem-01.png
+//        https://www.gatevidyalay.com/wp-content/uploads/2018/03/Dijkstra-Algorithm-Problem-01.png
         graph.newAdjacency("s", "a", 1);
         graph.newAdjacency("s", "b", 5);
         graph.newAdjacency("a", "b", 2);
@@ -238,7 +243,7 @@ public class Graph {
         System.out.println(graph.search(searchOrigin, searchEnd));
 
         System.out.println("ShortestPath: " + graph.getShortestPath(pathStart, pathEnd));
-        System.out.println("LongestPath: " + graph.getLongestPath(pathStart, pathEnd));
+        System.out.println("LongestPath: " + graph.getLongestPath(pathStart, pathEnd).get(0));
 
         System.out.println("Nodes at distance 3 from node: " + graph.adjacentNodesAtDistance(pathStart, distance));
     }

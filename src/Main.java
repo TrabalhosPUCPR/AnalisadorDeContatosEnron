@@ -46,6 +46,6 @@ public class Main {
 
          //*/
 
-        //Graph.debugGraph();
+        Graph.debugGraph();
     }
 }
