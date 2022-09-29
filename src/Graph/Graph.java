@@ -124,88 +124,13 @@ public class Graph {
     }
 
     public boolean search(Object originKey, Object destinationKey){
-        Graph.BfsIterator bfs = new BfsIterator(originKey, this);
-        while(bfs.next(false) != null){
-            if(bfs.next().toString().equals(destinationKey)){
+        BfsIterator bfs = new BfsIterator(this.getNode(originKey));
+        while(bfs.ready()){
+            if(bfs.next().toString().equals(destinationKey.toString())){
                 return true;
             }
         }
         return false;
-    }
-
-    private abstract static class searchIterator {
-        Graph graph;
-        LinkedList<String> nodeToVisitOrder;
-        private final HashSet<String> visitedNodes;
-
-        public searchIterator(Object originKey, Graph graph) {
-            this.graph = graph;
-            this.nodeToVisitOrder = new LinkedList<>();
-            this.nodeToVisitOrder.add(originKey.toString());
-            this.visitedNodes = new HashSet<>();
-            this.visitedNodes.add(originKey.toString());
-        }
-
-        protected boolean ready(){
-            return !this.nodeToVisitOrder.isEmpty();
-        }
-
-        abstract Node<?> next(boolean removeElement);
-
-        private static void reverse(Node<?>[] nodeList){
-            for(int i = 0; i < nodeList.length / 2; i++){
-                Node<?> temp = nodeList[nodeList.length - i - 1];
-                nodeList[nodeList.length - i - 1] = nodeList[i];
-                nodeList[i] = temp;
-            }
-        }
-
-        public Node<?> next(){
-            return this.next(true);
-        }
-        protected void addToNextVisitList(Node<?> next, boolean rev){
-            Node<?>[] adjacency = next.getAdjacencies();
-            if (rev) reverse(adjacency); // TODO: 9/27/2022 melhora isso 
-            for(Node<?> node : adjacency){
-                if(!this.visitedNodes.contains(node.toString())){
-                    this.nodeToVisitOrder.removeFirstOccurrence(node.toString());
-                    this.nodeToVisitOrder.add(node.toString());
-                }
-            }
-            this.visitedNodes.add(next.toString());
-        }
-    }
-    public static class BfsIterator extends searchIterator{
-        public BfsIterator(Object origin, Graph graph) {
-            super(origin, graph);
-        }
-
-        @Override
-        public Node<?> next(boolean removeElement) {
-            if(!this.ready()) return null;
-            Node<?> next = this.graph.getNode(this.nodeToVisitOrder.getFirst());
-            if(!removeElement) return next;
-            this.nodeToVisitOrder.removeFirst();
-            addToNextVisitList(next, false);
-            return next;
-        }
-    }
-
-    public static class DfsIterator extends searchIterator{
-
-        public DfsIterator(Object origin, Graph graph) {
-            super(origin, graph);
-        }
-
-        @Override
-        public Node<?> next(boolean removeElement) {
-            if(!this.ready()) return null;
-            Node<?> next = this.graph.getNode(this.nodeToVisitOrder.getLast());
-            if(!removeElement) return next;
-            this.nodeToVisitOrder.removeLast();
-            addToNextVisitList(next, true);
-            return next;
-        }
     }
 
     @Override
@@ -252,16 +177,16 @@ public class Graph {
 
         graph.printAdjacencies();
 
-        Graph.BfsIterator bfsIterator = new Graph.BfsIterator(0, graph);
-        Graph.DfsIterator dfsIterator = new Graph.DfsIterator(0, graph);
+        BfsIterator bfsIterator = new BfsIterator(graph.getNode(0));
+        DfsIterator dfsIterator = new DfsIterator(graph.getNode(0));
 
         System.out.print("BFS: ");
-        while(bfsIterator.next(false) != null){
+        while(bfsIterator.ready()){
             System.out.print(bfsIterator.next() + " ");
         }
         System.out.println();
         System.out.print("DFS: ");
-        while(dfsIterator.next(false) != null){
+        while(dfsIterator.ready()){
             System.out.print(dfsIterator.next() + " ");
         }
         System.out.println();

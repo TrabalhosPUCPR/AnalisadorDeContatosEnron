@@ -52,14 +52,10 @@ public class Analyzer {
                 System.out.println(userFolder.getName());
                 for(File userSentEmails : Objects.requireNonNull(userSentEmailsFolder.listFiles())){
                     BufferedReader reader = new BufferedReader(new FileReader(userSentEmails));
-
-                    // os destinatarios vao sempre estar na terceira linha, e melhor fazer assim doq um while ate encontrar um "To:" pq pode ter outras linhas q comecam com isso tb,
-                    // entao teria q fazer um contador pra ter algum limite, q e relativo a so fazer esse for
                     String line = reader.readLine();
                     while(!line.startsWith("From: ")){
                         line = reader.readLine();
                     }
-
                     Node<String> userNode = new Node<>(line.substring(6));
                     this.graph.add(userNode);
 
