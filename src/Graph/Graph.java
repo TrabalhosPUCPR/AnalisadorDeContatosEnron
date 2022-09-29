@@ -10,7 +10,7 @@ public class Graph {
     }
 
     public int verticesSize(){return this.nodes.size();}
-    public int connections(){
+    public int connections(){ // adiciona 1 pra todas adjacencia que cada node do grafo tem
         int con = 0;
         for(Node<?> n : this.getNodes()){
             con += n.getAdjacencies().length;
@@ -18,7 +18,7 @@ public class Graph {
         return con;
     }
 
-    public boolean add(Node<?> node){
+    public boolean add(Node<?> node){ // adiciona no grafo o node, caso ja exista, nao faz nada
         if(this.nodes.get(node.toString()) == null){
             this.nodes.put(node.toString(), node);
             return true;
@@ -30,15 +30,16 @@ public class Graph {
         return this.nodes.get(key.toString());
     }
 
-    public boolean newAdjacency(Object node1, Object node2, int weight){
-        if(this.nodes.get(node2.toString()) == null){
+    public boolean newAdjacency(Object node1, Object node2, int weight){ // pega o node1 dentro do grafo e chama a funcao que adiciona adjacencia
+        if(this.nodes.get(node2.toString()) == null){ // caso o node2 nao exista so retorna
             return false;
         }
         this.nodes.get(node1.toString()).newAdjacency(this.nodes.get(node2.toString()), weight);
-        return true;
+        return true; // verdadeiro quando foi possivel adicionar
     }
     public boolean newNonDirectedAdjacency(Object node1, Object node2, int weight){
-        return newAdjacency(node1, node2, weight) && newAdjacency(node2, node1, weight);
+        // chama a msm funcao em cima soq duas vezes para cada node
+        return newAdjacency(node1, node2, weight) && newAdjacency(node2, node1, weight); // retorna verdadeiro se os dois tiveram sucesso
     }
 
     public void setNode(Node<?> node){
@@ -51,7 +52,7 @@ public class Graph {
         return nodes;
     }
 
-    public void printAdjacencies(){
+    public void printAdjacencies(){ // pega todas as adjacencias e printa na tela
         for (Node<?> node : getNodes()) {
             System.out.print(node + ": | ");
             for (Node<?> nAdjacent : node.getAdjacencies()) {
@@ -61,7 +62,7 @@ public class Graph {
         }
     }
 
-    public List<Node<?>> getLongestPath(Object originKey, Object destinationKey){
+    public List<Node<?>> getLongestPath(Object originKey, Object destinationKey){ // chama o algoritmo de djikstra com o parametro especifio
         return this.getShortLongPath(this.getNode(originKey), this.getNode(destinationKey), false);
     }
 
@@ -70,9 +71,12 @@ public class Graph {
     }
 
     private List<Node<?>> getShortLongPath(Node<?> origin, Node<?> destination, boolean shortest){
-        if(!this.search(origin.toString(), destination.toString())){
+        if(!this.search(origin.toString(), destination.toString())){ // caso nao exista conexao entre a origem e destino, retorna vazio
             return new ArrayList<>();
         }
+
+        // instancializa todas as variaveis:
+        // distancias, visitados, nodes pra visitar, node anterior
         Map<String, Double> distances = new HashMap<>();
         distances.put(origin.toString(), 0.0);
 
@@ -81,24 +85,26 @@ public class Graph {
         nodeToVisit.add(origin);
 
         Map<String, Node<?>> previousNode = new HashMap<>();
-        while(!nodeToVisit.isEmpty()){
-            Node<?> current = getUnvisitedNodeWithMinDistance(nodeToVisit, distances);
-            Node<?>[] adjacencies = current.getAdjacencies();
-            for(Node<?> n : adjacencies){
-                if(!nodesPassed.contains(n)){
-                    Double currentsDistance = distances.get(current.toString());
+        while(!nodeToVisit.isEmpty()){ // enquanto a lista que guarda os nodes para visitar nao estiver vazio
+            Node<?> current = getUnvisitedNodeWithMinDistance(nodeToVisit, distances); // pega o proximo node que tem a menor distancia dentro do hashmap
+            Node<?>[] adjacencies = current.getAdjacencies(); // pega as adjacencias do node
+            for(Node<?> n : adjacencies){ // passa por todas as adjacencias
+                if(!nodesPassed.contains(n)){ // se o node adjacente ainda nao foi visitado
+                    Double currentsDistance = distances.get(current.toString()); // pega a distancia do node atual
+                    // soma a distancia do node atual com o peso dela com sua adjacencia, caso for nulo, ele e igual a 0, e caso for pra pegar o caminho mais longo, faz pow com -1
                     double newDistance = Math.pow((current.getWeight(n) + (currentsDistance == null ? 0 : currentsDistance)), (shortest ? 1 : -1));
-                    if(!distances.containsKey(n.toString()) || distances.get(n.toString()) > newDistance){
-                        distances.put(n.toString(), newDistance);
+                    if(!distances.containsKey(n.toString()) || distances.get(n.toString()) > newDistance){ // se o node ainda nao tem uma distancia definida, ou a nova distancia e menor q a que existe
+                        distances.put(n.toString(), newDistance); // troca a distancia e o node anterior
                         previousNode.put(n.toString(), current);
                     }
-                    if(!nodeToVisit.contains(n) && !n.equals(destination)){
-                        nodeToVisit.add(n);
+                    if(!nodeToVisit.contains(n) && !n.equals(destination)){ // caso o node ainda nao foi adicionado na lista para visitar e ele nao e igual ao destino
+                        nodeToVisit.add(n); // adiciona na lista para visitar
                     }
                 }
             }
-            nodesPassed.add(current);
+            nodesPassed.add(current); // adiciona o node visitado como visitado
         }
+        // recria o array do caminho percorrido, pegando o node destino e indo para o node definido como anterior
         List<Node<?>> shortestPath = new ArrayList<>();
         shortestPath.add(destination);
         Node<?> current = previousNode.get(destination.toString());
@@ -123,7 +129,7 @@ public class Graph {
         return nodesToVisit.remove(lowestNodeIndex);
     }
 
-    public boolean search(Object originKey, Object destinationKey){
+    public boolean search(Object originKey, Object destinationKey){ // itera sobre o grafo inteiro ate encontrar o destino ou nao ter mais elementos
         BfsIterator bfs = new BfsIterator(this.getNode(originKey));
         while(bfs.ready()){
             if(bfs.next().toString().equals(destinationKey.toString())){
@@ -139,11 +145,11 @@ public class Graph {
     public List<?> adjacentNodesAtDistance(Node<?> origin, int distance){
         BfsIterator bfs = new BfsIterator(origin);
         List<Node<?>> nodes = new ArrayList<>();
-        while(bfs.ready() && !(bfs.nextIterationLayer() == distance)){
+        while(bfs.ready() && !(bfs.nextIterationLayer() == distance)){ // itera sobre o grafo ate a camada dele for igual a distancia
             bfs.next();
         }
-        while (bfs.ready() && bfs.nextIterationLayer() == distance){
-            nodes.add(bfs.next());
+        while (bfs.ready() && bfs.nextIterationLayer() == distance){ // enquanto a distancia for igual a distancia
+            nodes.add(bfs.next()); // adiciona na lista de nodes que tao na camada
         }
         return nodes;
     }
@@ -153,7 +159,7 @@ public class Graph {
         return Arrays.toString(this.nodes.values().toArray());
     }
 
-    private static void createGraph(Graph graph, Object[] keys){
+    private static void createGraph(Graph graph, Object[] keys){ // codigo so pra debuga ali em baixo
         for(Object key : keys) {
             graph.add(new Node<>(key));
         }

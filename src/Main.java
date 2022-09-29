@@ -6,7 +6,7 @@ import java.util.List;
 public class Main {
     public static void main(String[] args) {
         ///*
-        Analyzer analyzer = new Analyzer("Data/Amostra Enron", "sent");
+        Analyzer analyzer = new Analyzer("Data/Amostra Enron", "sent"); // cria o analisador
         //Analyzer analyzer = new Analyzer("Data/mockData", "sent");
         System.out.println("\nAll nodes in graph: " + analyzer.getGraph());
 
@@ -16,7 +16,7 @@ public class Main {
         System.out.println();
 
         int topNSenders = 20;
-        System.out.print("Top " + topNSenders + " receivers: ");
+        System.out.print("Top " + topNSenders + " senders: ");
         List<?> topSenders = analyzer.getTopSenders(topNSenders);
         System.out.println(topSenders);
 
