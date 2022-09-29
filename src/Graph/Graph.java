@@ -212,7 +212,7 @@ public class Graph {
         graph.newNonDirectedAdjacency(5, 4, 10);
         graph.newNonDirectedAdjacency(3, 4, 9);
         */
-        
+
         graph.printAdjacencies();
 
         BfsIterator bfsIterator = new BfsIterator(graph.getNode(iteratorStart));

@@ -1,6 +1,8 @@
 package Analyzer;
 
 import Graph.Graph;
+import Graph.BfsIterator;
+import Graph.DfsIterator;
 import Graph.Node;
 
 import java.io.*;
@@ -15,6 +17,30 @@ public class Analyzer {
         this.graph = new Graph();
         this.sentEmailFolder = emailFolderName;
         createGraph();
+    }
+
+    public List<?> findConnectionBFS(Object key, Object key2){
+        BfsIterator bfsIterator = new BfsIterator(this.graph.getNode(key));
+        ArrayList<Node<?>> takenSearchPath = new ArrayList<>();
+        while(bfsIterator.ready()){
+            takenSearchPath.add(bfsIterator.next());
+            if(takenSearchPath.get(takenSearchPath.size() - 1).toString().equals(key2.toString())){
+                return takenSearchPath;
+            }
+        }
+        return null;
+    }
+
+    public List<?> findConnectionDFS(Object key, Object key2){
+        DfsIterator dfsIterator = new DfsIterator(this.graph.getNode(key));
+        ArrayList<Node<?>> takenSearchPath = new ArrayList<>();
+        while(dfsIterator.ready()){
+            takenSearchPath.add(dfsIterator.next());
+            if(takenSearchPath.get(takenSearchPath.size() - 1).toString().equals(key2.toString())){
+                return takenSearchPath;
+            }
+        }
+        return null;
     }
 
     public Graph getGraph() {
@@ -49,7 +75,7 @@ public class Analyzer {
                 if(!userSentEmailsFolder.isDirectory()){
                     continue;
                 }
-                System.out.println(userFolder.getName());
+                System.out.println("Analyzing: " + userFolder.getName() + "...");
                 for(File userSentEmails : Objects.requireNonNull(userSentEmailsFolder.listFiles())){
                     BufferedReader reader = new BufferedReader(new FileReader(userSentEmails));
                     String line = reader.readLine();

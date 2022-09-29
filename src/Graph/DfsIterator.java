@@ -7,7 +7,7 @@ public class DfsIterator extends SearchIterator{
     }
 
     @Override
-    Node<?> next() {
+    public Node<?> next() {
         if(!this.ready()){
             return null;
         }

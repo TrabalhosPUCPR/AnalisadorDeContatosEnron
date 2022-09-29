@@ -13,11 +13,11 @@ public abstract class SearchIterator {
         this.nodesToVisit.add(origin);
     }
 
-    abstract Node<?> next();
-    Node<?> peek(){
+    public abstract Node<?> next();
+    public Node<?> peek(){
         return nodesToVisit.getFirst();
     }
-    boolean ready(){
+    public boolean ready(){
         return !nodesToVisit.isEmpty();
     }
     abstract void addToList(Node<?> currentNextNode);
